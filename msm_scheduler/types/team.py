@@ -1,9 +1,6 @@
 from typing import List, TypedDict
 
-from .boss import Boss
-from .player import Player
-
 class TeamParams(TypedDict):
-    boss: Boss
-    players: List[Player]
-    availability: List[str]
+    boss_name: str
+    player_names: List[str]
+    time: str

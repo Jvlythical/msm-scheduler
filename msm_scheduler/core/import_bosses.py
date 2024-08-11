@@ -1,7 +1,9 @@
 import csv
+
 from typing import List
 
-from ..types import Boss
+from ..models import Boss
+from ..types import BossParams
 
 def import_bosses_from_csv(filename: str) -> List[Boss]:
     bosses = []
@@ -9,15 +11,13 @@ def import_bosses_from_csv(filename: str) -> List[Boss]:
         reader = csv.DictReader(file)
         for row in reader:
             boss_params = BossParams(
-                availability=row['availability'].split(';'),  # Assuming availability is a semicolon-separated string
-                capacity=int(row['capacity']),
-                clear_probability=int(row['clear_probability']),
-                experience=int(row['experience']),
-                hp_required=int(row['hp_required']),
-                name=row['name'],
-                total_max_damage_cap_required=int(row['total_max_damage_cap_required'])
+                arcane_power_requaired=int(row['Arcane Power Required']),
+                capacity=int(row['Capacity']),
+                experience_required=int(row['Experience']),
+                hp_required=int(row['HP Required']),
+                name=row['Name'],
+                total_max_damage_cap_required=int(row['Total Max Damage Cap Required'])
             )
             boss = Boss(**boss_params)
             bosses.append(boss)
     return bosses
-

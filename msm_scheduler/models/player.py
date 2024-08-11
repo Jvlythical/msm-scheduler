@@ -1,21 +1,20 @@
+from math import log
 from typing import List
 
-from ..types import Experience, PlayerParams
+from ..constants.boss import MAX_EXPERIENCE, MIN_EXPERIENCE
+from ..types import PlayerExperience, PlayerParams
+from .boss import Boss
 
 class Player:
     def __init__(self, **kwargs: PlayerParams):
-        self.name = kwargs.get('name', '')
-        self.max_damage_cap = kwargs.get('max_damage_cap', 0)
-        self.hp = kwargs.get('hp', 0)
         self.arcane_power = kwargs.get('arcane_power', 0)
         self.availability = kwargs.get('availability', [])
-        self.experience = kwargs.get('experience', {
-            'hard_damien': 0,
-            'lucid': 0,
-            'lotus': 0,
-            'normal_damien': 0,
-            'will': 0
-        })
+        self.experience = kwargs.get('experience', {})
+        self.hp = kwargs.get('hp', 0)
+        self.identity = kwargs.get('identity')
+        self.interests = list(self.experience.keys())
+        self.max_damage_cap = kwargs.get('max_damage_cap', 0)
+        self.name = kwargs.get('name', '')
 
     @property
     def name(self):
@@ -68,14 +67,37 @@ class Player:
         self._availability = value
 
     @property
+    def interests(self):
+        return self._interests
+
+    @interests.setter
+    def interests(self, value):
+        self._interests = value
+
+    @property
     def experience(self):
         return self._experience
 
     @experience.setter
-    def experience(self, value: Experience):
+    def experience(self, value: PlayerExperience):
         if not all(isinstance(exp, int) for exp in value.values()):
             raise ValueError("All experience values must be integers")
         self._experience = {k: value[k] for k in sorted(value)}
+
+    def boss_experience(self, boss: Boss):
+        player_experience = self.experience[boss.name]
+        if player_experience < MIN_EXPERIENCE:
+            return MIN_EXPERIENCE
+        elif player_experience > MAX_EXPERIENCE:
+            return MAX_EXPERIENCE
+        return player_experience
+
+    def boss_max_damage_cap(self, boss: Boss):
+        experience = self.boss_experience(boss)
+        return self.max_damage_cap * log(experience, MAX_EXPERIENCE)
+
+    def remove_availability(self, time: str):
+        self.availability.remove(time)
 
     def __repr__(self):
         return (f"Player(name={self.name}, max_damage_cap={self.max_damage_cap}, hp={self.hp}, "
