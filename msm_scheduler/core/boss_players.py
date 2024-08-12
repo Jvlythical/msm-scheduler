@@ -1,3 +1,5 @@
+import pdb
+
 from typing import List, Union
 
 from ..models import Boss, Player
@@ -21,30 +23,31 @@ class BossPlayers():
 
     # Organize players by bosses they are interested in
     for player in players:
-      for boss_name in player.experience:
-        if boss_name not in self.boss_stacks:
-          self.boss_stacks[boss_name] = []
-        self.boss_stacks[boss_name].append(player)
+      for boss_name in player.interests:
+        self.get(boss_name).append(player)
 
     # For each boss, sort players with highest effectiveness last
     for boss_name in self.boss_stacks:
       boss = self.bosses_index[boss_name]
-      stack = self.boss_stacks[boss_name]
-      stack.sort(key=lambda player: player.boss_experience(boss))
+      stack = self.get(boss_name)
+      stack.sort(key=lambda player: player.boss_effectiveness(boss))
 
-  def get(self, boss_name):
+  def get(self, boss_name) -> List[Player]:
     stack = self.boss_stacks.get(boss_name)
     if not stack:
-      return []
+      stack = []
+      self.boss_stacks[boss_name] = stack
     return stack
 
   def next_player(self, boss_name: str) -> Union[Player, None]:
     stack = self.get(boss_name)
 
-    if len(stack) == 0:
-      return
+    while len(stack) > 0:
+      player: Player = stack.pop()
 
-    return stack.pop()
+      # A player may have their interests dynamically adjusted once they are assigned
+      if boss_name in player.interests:
+        return player
 
   def remove(self, boss_name: str, player_name: str):
     stack = self.get(boss_name)

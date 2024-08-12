@@ -27,7 +27,7 @@ class TeamsScheduler():
         # Remove base team players from available boss players
         for team in self.base_teams:
             for player in team.players:
-                self.boss_players.remove(team.boss_name, player.name)
+                player.remove_interest(team.boss_name)
 
     @property
     def base_teams(self) -> List[Team]:
@@ -61,20 +61,21 @@ class TeamsScheduler():
     def players_index(self):
         return self.boss_players.players_index
 
-    def assign_player(self, player: Player, team: Team):
-        team.add_player(player)
-        self.player_teams_index[player.name].append(team)
-
-    def next_available_boss_team(self, boss_name: str, player: Player):
-        availability = list(map(lambda team: team.availability, player.assigned_teams))
-        teams: List[Team] = self.boss_teams_index[boss_name]
-        for team in teams:
-            if team.availability in availability:
-                return team
+    def assign_player(self, player: Player, teams: List[Team]):
+        player_teams: List[Team] = self.player_teams_index[player.name]
 
         for team in teams:
-            if team.player_available(player):
-                return team
+            if not team.player_available(player):
+                continue
+
+            if team.add_player(player):
+                player_teams.append(team)
+                break
+
+    def assign_player_interests(self, player: Player):
+        for boss_name in player.interests:
+            teams = self.player_boss_teams(player, boss_name)
+            self.assign_player(player, teams)
 
     def assign(self):
         # Sort bosses by difficulty, hardest first
@@ -85,32 +86,47 @@ class TeamsScheduler():
             print(f"=== Assigning teams for {boss.name}")
             print(boss)
 
-            teams: List[Team] = self.boss_teams_index[boss.name]
-
-            # Sort team with lowest clear_propability first
-            teams.sort(key=lambda team: team.clear_probability())
+            teams: List[Team] = self.boss_teams(boss.name)
 
             while True:
                 player = self.boss_players.next_player(boss.name)
 
+                # Continue while there are still players to assign
                 if not player:
                     break
 
-                assigned = False
-                filled = False
-                for team in teams:
-                    if team.player_available(player):
-                        assigned = True
-                        self.assign_player(player, team)
-                        break
-                    
-                    filled = filled and team.is_full()
+                self.assign_player(player, teams)
+                self.assign_player_interests(player)
 
-                if not assigned:
-                    print(f"{player.name} (availability {player.availability}) is not available to run")
-                
+                filled = True
+                for team in teams:
+                    if not team.is_full():
+                        filled = False
+
+                # Continue while teams are not filled
                 if filled:
                     break
+
+    def boss_teams(self, boss_name: str):
+        teams: List[Team] = self.boss_teams_index[boss_name]
+
+        # Sort team with lowest clear_propability first
+        teams.sort(key=lambda team: team.clear_probability())
+
+        return teams
+
+    def player_boss_teams(self, player: Player, boss_name: str):
+        player_teams: List[Team] = self.player_teams_index[player.name]
+        availability = list(map(lambda team: team.time_by_day, player_teams))
+        boss_teams: List[Team] = self.boss_teams(boss_name)
+
+        # Find teams that are on the same days as when the player is already running
+        teams = list(filter(lambda team: team.time_by_day in availability, boss_teams))
+
+        if len(teams) == 0:
+            return boss_teams
+        
+        return teams
 
     def __join_base_team_resources(self, base_teams: List[Team]):
         for team in base_teams:

@@ -17,6 +17,10 @@ class Team:
     def time(self):
         return self._time
 
+    @property
+    def time_by_day(self):
+        return self._time.split('.')[0]
+
     @time.setter
     def time(self, value: List[str]):
         if not isinstance(value, str):
@@ -64,14 +68,16 @@ class Team:
             return False
 
         self._players.append(player)
+
         player.remove_availability(self.time)
+        player.remove_interest(self.boss_name)
 
         return True
 
     def clear_probability(self):
         team_mdc = 0
         for player in self.players:
-            team_mdc += player.boss_max_damage_cap(self.boss)
+            team_mdc += player.max_damage_cap
 
         return team_mdc / self.boss.total_max_damage_cap_required
 

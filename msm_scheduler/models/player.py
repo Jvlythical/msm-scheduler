@@ -2,6 +2,7 @@ from math import log
 from typing import List
 
 from ..constants.boss import MAX_EXPERIENCE, MIN_EXPERIENCE
+from ..constants.player import AVAILABILITY_USAGES
 from ..types import PlayerExperience, PlayerParams
 from .boss import Boss
 
@@ -9,6 +10,9 @@ class Player:
     def __init__(self, **kwargs: PlayerParams):
         self.arcane_power = kwargs.get('arcane_power', 0)
         self.availability = kwargs.get('availability', [])
+        self.availability_count = {}
+        for availability in self.availability:
+            self.availability_count[availability] = 0
         self.experience = kwargs.get('experience', {})
         self.hp = kwargs.get('hp', 0)
         self.identity = kwargs.get('identity')
@@ -67,7 +71,7 @@ class Player:
         self._availability = value
 
     @property
-    def interests(self):
+    def interests(self) -> List[str]:
         return self._interests
 
     @interests.setter
@@ -92,12 +96,29 @@ class Player:
             return MAX_EXPERIENCE
         return player_experience
 
-    def boss_max_damage_cap(self, boss: Boss):
-        experience = self.boss_experience(boss)
-        return self.max_damage_cap * log(experience, MAX_EXPERIENCE)
+    def boss_effectiveness(self, boss: Boss):
+        boss_experience = self.boss_experience(boss)
+        boss_experience_required = boss.experience_required
+        boss_total_max_damage_cap_required = boss.total_max_damage_cap_required
+        max_damage_cap = self.max_damage_cap
+
+        return 114.36 * max_damage_cap / boss_total_max_damage_cap_required * boss_experience ** 0.657
 
     def remove_availability(self, time: str):
-        self.availability.remove(time)
+        if time not in self.availability:
+            return
+
+        self.availability_count[time] += 1
+        
+        # Each availability time can be used AVAILABILITY_USAGES times
+        if self.availability_count[time] >= AVAILABILITY_USAGES:
+            self.availability.remove(time)
+
+    def remove_interest(self, boss_name: str):
+        if not boss_name in self.interests:
+            return
+
+        del self.interests[self.interests.index(boss_name)]
 
     def __repr__(self):
         return (f"Player(name={self.name}, max_damage_cap={self.max_damage_cap}, hp={self.hp}, "
