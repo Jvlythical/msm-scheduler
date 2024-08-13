@@ -49,7 +49,7 @@ class Boss:
     @name.setter
     def name(self, value: str):
         if value not in VALID_BOSSES:
-            raise ValueError(f"boss must be from of the valid bosses {VALID_BOSSES}")
+            raise ValueError(f"boss {value} must be from of the valid bosses {VALID_BOSSES}")
         self._name = value
 
     @property

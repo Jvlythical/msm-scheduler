@@ -24,10 +24,7 @@ class TeamsScheduler():
         for player in self.players:
             self.player_teams_index[player.name] = []
 
-        # Remove base team players from available boss players
-        for team in self.base_teams:
-            for player in team.players:
-                player.remove_interest(team.boss_name)
+        self.__initialize_base_teams()
 
     @property
     def base_teams(self) -> List[Team]:
@@ -79,14 +76,20 @@ class TeamsScheduler():
 
     def assign(self):
         # Sort bosses by difficulty, hardest first
-        bosses = self.bosses.copy()
+        boss_names = list(map(lambda team: team.boss_name, self.base_teams))
+        boss_names = set(boss_names)
+        bosses: List[Boss] = list(map(lambda boss_name: self.bosses_index[boss_name], boss_names))
         bosses.sort(key=lambda boss: boss.total_max_damage_cap_required, reverse=True)
 
         for boss in bosses:
             print(f"=== Assigning teams for {boss.name}")
+
+            print("=== Boss Stats")
             print(boss)
 
-            teams: List[Team] = self.boss_teams(boss.name)
+            print("=== Boss Available Teams")
+            for team in self.boss_teams(boss.name):
+                print(team)
 
             while True:
                 player = self.boss_players.next_player(boss.name)
@@ -95,6 +98,10 @@ class TeamsScheduler():
                 if not player:
                     break
 
+                print("=== Assigning Player")
+                print(player)
+
+                teams: List[Team] = self.boss_teams(boss.name)
                 self.assign_player(player, teams)
                 self.assign_player_interests(player)
 
@@ -102,13 +109,17 @@ class TeamsScheduler():
                 for team in teams:
                     if not team.is_full():
                         filled = False
+                        break
 
                 # Continue while teams are not filled
                 if filled:
                     break
 
     def boss_teams(self, boss_name: str):
-        teams: List[Team] = self.boss_teams_index[boss_name]
+        teams: List[Team] = self.boss_teams_index.get(boss_name)
+
+        if not isinstance(teams, list):
+            return []
 
         # Sort team with lowest clear_propability first
         teams.sort(key=lambda team: team.clear_probability())
@@ -127,6 +138,18 @@ class TeamsScheduler():
             return boss_teams
         
         return teams
+
+    def __initialize_base_teams(self):
+        # Since the player is already part of a base team,
+        # they are no longer interested in running that boss
+        for team in self.base_teams:
+            for player in team.players:
+                player.remove_interest(team.boss_name)
+        
+        # For the base team player's remaining interests, assign them a team
+        for team in self.base_teams:
+            for player in team.players:
+                self.assign_player_interests(player)
 
     def __join_base_team_resources(self, base_teams: List[Team]):
         for team in base_teams:

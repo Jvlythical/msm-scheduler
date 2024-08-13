@@ -6,7 +6,7 @@ from ..models import Player
 
 DELIMITTER = ','
 
-def import_availability(file_path: str) -> List[Player]:
+def import_player_availabilities_from_csv(file_path: str) -> List[Player]:
     availability = []
 
     with open(file_path, mode='r') as file:

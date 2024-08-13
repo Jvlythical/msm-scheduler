@@ -1,4 +1,4 @@
-from math import log
+import pdb
 from typing import List
 
 from ..constants.boss import MAX_EXPERIENCE, MIN_EXPERIENCE
@@ -76,7 +76,12 @@ class Player:
 
     @interests.setter
     def interests(self, value):
-        self._interests = value
+        interests = []
+        for boss_name in value:
+            experience = self.experience[boss_name]
+            if experience >= MIN_EXPERIENCE and experience <= MAX_EXPERIENCE:
+                interests.append(boss_name)
+        self._interests = interests
 
     @property
     def experience(self):
@@ -97,6 +102,8 @@ class Player:
         return player_experience
 
     def boss_effectiveness(self, boss: Boss):
+        if not boss:
+            return 0
         boss_experience = self.boss_experience(boss)
         boss_experience_required = boss.experience_required
         boss_total_max_damage_cap_required = boss.total_max_damage_cap_required
@@ -117,7 +124,6 @@ class Player:
     def remove_interest(self, boss_name: str):
         if not boss_name in self.interests:
             return
-
         del self.interests[self.interests.index(boss_name)]
 
     def __repr__(self):

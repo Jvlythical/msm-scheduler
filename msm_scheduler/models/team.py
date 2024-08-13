@@ -42,7 +42,7 @@ class Team:
     @boss_name.setter
     def boss_name(self, value: str):
         if value not in VALID_BOSSES:
-            raise ValueError(f"boss_name must be from of the valid boss_namees {VALID_BOSSES}")
+            raise ValueError(f"boss_name {value} must be from of the valid boss_names {VALID_BOSSES}")
         self._boss_name = value
 
     @property

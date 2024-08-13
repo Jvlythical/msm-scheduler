@@ -28,7 +28,7 @@ class BossPlayers():
 
     # For each boss, sort players with highest effectiveness last
     for boss_name in self.boss_stacks:
-      boss = self.bosses_index[boss_name]
+      boss = self.bosses_index.get(boss_name)
       stack = self.get(boss_name)
       stack.sort(key=lambda player: player.boss_effectiveness(boss))
 
