@@ -7,7 +7,7 @@ from .core.teams_scheduler import TeamsScheduler
 from .core.import_data import import_data
 from .models import Boss, Player, Team
 
-import_data()
+print(import_data())
 
 # Example usage
 base_teams = [
