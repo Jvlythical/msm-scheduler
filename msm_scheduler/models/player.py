@@ -6,6 +6,7 @@ from ..constants.player import AVAILABILITY_USAGES
 from ..types import PlayerExperience, PlayerParams
 from .boss import Boss
 
+
 class Player:
     def __init__(self, **kwargs: PlayerParams):
         self.arcane_power = kwargs.get('arcane_power', 0)
@@ -116,7 +117,7 @@ class Player:
             return
 
         self.availability_count[time] += 1
-        
+
         # Each availability time can be used AVAILABILITY_USAGES times
         if self.availability_count[time] >= AVAILABILITY_USAGES:
             self.availability.remove(time)
@@ -128,5 +129,6 @@ class Player:
 
     def __repr__(self):
         return (f"Player(name={self.name}, max_damage_cap={self.max_damage_cap}, hp={self.hp}, "
-                f"arcane_power={self.arcane_power}, availability={self.availability}, "
+                f"arcane_power={self.arcane_power}, availability={
+                    self.availability}, "
                 f"experience={self.experience})")

@@ -1,4 +1,5 @@
-from typing import List, TypedDict
+from typing import TypedDict
+
 
 class BossParams(TypedDict):
     capacity: int

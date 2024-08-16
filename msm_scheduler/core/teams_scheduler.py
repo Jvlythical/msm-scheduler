@@ -1,9 +1,10 @@
 import pdb
 
-from typing import List, Union
+from typing import List
 
 from ..models import Boss, Player, Team
 from .boss_players import BossPlayers
+
 
 class TeamsScheduler():
 
@@ -11,7 +12,6 @@ class TeamsScheduler():
         self.boss_players = boss_players
         self.base_teams = base_teams
         self.fills = []
-
         self.__join_base_team_resources(base_teams)
 
         self.boss_teams_index = {}
@@ -23,7 +23,6 @@ class TeamsScheduler():
         self.player_teams_index = {}
         for player in self.players:
             self.player_teams_index[player.name] = []
-
         self.__initialize_base_teams()
 
     @property
@@ -78,8 +77,10 @@ class TeamsScheduler():
         # Sort bosses by difficulty, hardest first
         boss_names = list(map(lambda team: team.boss_name, self.base_teams))
         boss_names = set(boss_names)
-        bosses: List[Boss] = list(map(lambda boss_name: self.bosses_index[boss_name], boss_names))
-        bosses.sort(key=lambda boss: boss.total_max_damage_cap_required, reverse=True)
+        bosses: List[Boss] = list(
+            map(lambda boss_name: self.bosses_index[boss_name], boss_names))
+        bosses.sort(
+            key=lambda boss: boss.total_max_damage_cap_required, reverse=True)
 
         for boss in bosses:
             print(f"=== Assigning teams for {boss.name}")
@@ -93,7 +94,6 @@ class TeamsScheduler():
 
             while True:
                 player = self.boss_players.next_player(boss.name)
-
                 # Continue while there are still players to assign
                 if not player:
                     break
@@ -132,11 +132,12 @@ class TeamsScheduler():
         boss_teams: List[Team] = self.boss_teams(boss_name)
 
         # Find teams that are on the same days as when the player is already running
-        teams = list(filter(lambda team: team.time_by_day in availability, boss_teams))
+        teams = list(
+            filter(lambda team: team.time_by_day in availability, boss_teams))
 
         if len(teams) == 0:
             return boss_teams
-        
+
         return teams
 
     def __initialize_base_teams(self):
@@ -145,7 +146,7 @@ class TeamsScheduler():
         for team in self.base_teams:
             for player in team.players:
                 player.remove_interest(team.boss_name)
-        
+
         # For the base team player's remaining interests, assign them a team
         for team in self.base_teams:
             for player in team.players:

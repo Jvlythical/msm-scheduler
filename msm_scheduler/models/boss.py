@@ -3,6 +3,7 @@ from typing import List
 from ..constants.boss import VALID_BOSSES
 from ..types import BossParams
 
+
 class Boss:
     def __init__(self, **kwargs: BossParams):
         self.capacity = kwargs.get('capacity', 0)
@@ -10,7 +11,8 @@ class Boss:
         self.experience_required = kwargs.get('experience_required', 0)
         self.hp_required = kwargs.get('hp_required', 0)  # New property
         self.name = kwargs.get('name', '')
-        self.total_max_damage_cap_required = kwargs.get('total_max_damage_cap_required', 0)  # Renamed property
+        self.total_max_damage_cap_required = kwargs.get(
+            'total_max_damage_cap_required', 0)  # Renamed property
 
     @property
     def capacity(self):
@@ -49,7 +51,8 @@ class Boss:
     @name.setter
     def name(self, value: str):
         if value not in VALID_BOSSES:
-            raise ValueError(f"boss {value} must be from of the valid bosses {VALID_BOSSES}")
+            raise ValueError(
+                f"boss {value} must be from of the valid bosses {VALID_BOSSES}")
         self._name = value
 
     @property
@@ -59,11 +62,12 @@ class Boss:
     @total_max_damage_cap_required.setter
     def total_max_damage_cap_required(self, value: int):
         if value < 0:
-            raise ValueError("total_max_damage_cap_required must be a positive integer")
+            raise ValueError(
+                "total_max_damage_cap_required must be a positive integer")
         self._total_max_damage_cap_required = value
 
     def __repr__(self):
         return (f"Boss(name={self.name}, total_max_damage_cap_required={self.total_max_damage_cap_required}, "
-                f"experience_required={self.experience_required}, clear_probability={self.clear_probability}, "
+                f"experience_required={self.experience_required}, clear_probability={
+                    self.clear_probability}, "
                 f"capacity={self.capacity}, hp_required={self.hp_required})")
-

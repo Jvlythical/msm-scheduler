@@ -25,8 +25,9 @@ def _get_sheet_range(sheet, sheet_range):
     return pd.DataFrame(values[1:], columns=values[0])
 
 
-def import_data(creds=None,
-                columns=['Players!A1:F', 'Player Experiences!A1:F', 'Player Interests!A1:F', 'Player Availability!A1:H']):
+def import_player_data(creds=None,
+                       columns=['Players!A1:F', 'Player Experiences!A1:F',
+                                'Player Interests!A1:F', 'Player Availability!A1:H']):
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.

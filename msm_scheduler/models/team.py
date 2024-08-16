@@ -5,6 +5,7 @@ from ..types import TeamParams
 from .boss import Boss
 from .player import Player
 
+
 class Team:
     def __init__(self, **kwargs: TeamParams):
         self.time = kwargs.get('time')
@@ -42,7 +43,8 @@ class Team:
     @boss_name.setter
     def boss_name(self, value: str):
         if value not in VALID_BOSSES:
-            raise ValueError(f"boss_name {value} must be from of the valid boss_names {VALID_BOSSES}")
+            raise ValueError(
+                f"boss_name {value} must be from of the valid boss_names {VALID_BOSSES}")
         self._boss_name = value
 
     @property
@@ -74,12 +76,15 @@ class Team:
 
         return True
 
-    def clear_probability(self):
+    @property
+    def mdc(self):
         team_mdc = 0
         for player in self.players:
             team_mdc += player.max_damage_cap
+        return team_mdc
 
-        return team_mdc / self.boss.total_max_damage_cap_required
+    def clear_probability(self):
+        return self.mdc / self.boss.total_max_damage_cap_required
 
     def is_full(self):
         if not self.boss:
