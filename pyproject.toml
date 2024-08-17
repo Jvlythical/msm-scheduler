@@ -1,0 +1,22 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+authors = []
+description = "Organize teams for MaplestoryM bosses"
+license = "Apache License 2.0"
+name = "msm-scheduler"
+readme = "README.md"
+version = "0.1.0"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+yamale = ">=4.0.0,<=4.0.2"
+
+[tool.poetry.group.test.dependencies]
+pytest = ">=7.1.0"
+
+[tool.poetry.urls]
+Homepage = "https://github.com/Jvlythical/msm_scheduler"

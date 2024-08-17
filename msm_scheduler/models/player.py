@@ -17,7 +17,7 @@ class Player:
         self.experience = kwargs.get('experience', {})
         self.hp = kwargs.get('hp', 0)
         self.identity = kwargs.get('identity')
-        self.interests = list(self.experience.keys())
+        self.interests = kwargs.get('interests', {})
         self.max_damage_cap = kwargs.get('max_damage_cap', 0)
         self.name = kwargs.get('name', '')
 
@@ -128,7 +128,8 @@ class Player:
         del self.interests[self.interests.index(boss_name)]
 
     def __repr__(self):
-        return (f"Player(name={self.name}, max_damage_cap={self.max_damage_cap}, hp={self.hp}, "
-                f"arcane_power={self.arcane_power}, availability={
-                    self.availability}, "
-                f"experience={self.experience})")
+        return (
+            f"Player(name={self.name}, max_damage_cap={self.max_damage_cap}, hp={self.hp}, "
+            f"arcane_power={self.arcane_power}, availability={self.availability}, "
+            f"experience={self.experience}), interests={self.interests}"
+        )

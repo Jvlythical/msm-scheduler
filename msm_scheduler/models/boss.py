@@ -67,7 +67,8 @@ class Boss:
         self._total_max_damage_cap_required = value
 
     def __repr__(self):
-        return (f"Boss(name={self.name}, total_max_damage_cap_required={self.total_max_damage_cap_required}, "
-                f"experience_required={self.experience_required}, clear_probability={
-                    self.clear_probability}, "
-                f"capacity={self.capacity}, hp_required={self.hp_required})")
+        return (
+            f"Boss(name={self.name}, total_max_damage_cap_required={self.total_max_damage_cap_required}, "
+            f"experience_required={self.experience_required}, clear_probability={self.clear_probability}, "
+            f"capacity={self.capacity}, hp_required={self.hp_required})"
+        )

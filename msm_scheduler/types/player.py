@@ -17,6 +17,13 @@ class PlayerExperience(TypedDict):
     normal_damien: Union[int, None]
     will: Union[int, None]
 
+class PlayerInterest(TypedDict):
+    hard_damien: bool
+    lucid: bool
+    lotus: bool
+    normal_damien: bool
+    will: bool
+
 class PlayerStats(TypedDict):
     arcane_power: int
     hp: int

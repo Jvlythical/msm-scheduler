@@ -1,10 +1,10 @@
 import pdb
 
-from .constants.boss import HARD_DAMIEN
-from .core.boss_players import BossPlayers
-from .core.players_builder import PlayersBuilder
-from .core.teams_scheduler import TeamsScheduler
-from .models import Boss, Player, Team
+from ..constants.boss import HARD_DAMIEN
+from ..core.boss_players import BossPlayers
+from ..core.players_builder import PlayersBuilder
+from ..core.teams_scheduler import TeamsScheduler
+from ..models import Boss, Team
 
 # Example usage
 base_teams = [
@@ -27,7 +27,7 @@ player_stats = [
         'max_damage_cap': 200, 'name': 'Warrior'},
 ]
 
-player_availability = [
+player_availabilities = [
     {'friday': [], 'identity': '1', 'monday': ['18'], 'saturday': [],
         'sunday': [], 'thursday': [], 'tuesday': [], 'wednesday': []},
     {'friday': [], 'identity': '2', 'monday': [], 'saturday': [],
@@ -38,18 +38,30 @@ player_availability = [
         'sunday': [], 'thursday': [], 'tuesday': [], 'wednesday': []},
 ]
 
-player_experience = [
+player_experiences = [
     {'name': 'Archer', 'hard_damien': 4},
     {'name': 'Mage', 'hard_damien': 8},
     {'name': 'Rogue', 'hard_damien': 6},
     {'name': 'Warrior', 'hard_damien': 10},
 ]
 
-players = PlayersBuilder(
-    player_stats, player_availability, player_experience).build()
+player_interests = [
+    {'name': 'Archer', 'hard_damien': 'Y'},
+    {'name': 'Mage', 'hard_damien': 'Y'},
+    {'name': 'Rogue', 'hard_damien': 'Y'},
+    {'name': 'Warrior', 'hard_damien': 'Y'},
+]
+
+builder = PlayersBuilder()
+builder.with_availabilities(player_availabilities)
+builder.with_experiences(player_experiences)
+builder.with_interests(player_interests)
+builder.with_stats(player_stats)
+players = builder.build()
 
 boss_players = BossPlayers(players=players, bosses=bosses)
 scheduler = TeamsScheduler(boss_players, base_teams)
+
 scheduler.assign()
 
 for idx, team in enumerate(base_teams):
