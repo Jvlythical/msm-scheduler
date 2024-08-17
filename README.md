@@ -1,10 +1,11 @@
 ### Usage
 
 ```
-python3 -m msm_scheduler.driver <PLAYERS.CSV> <PLAYER_EXPERIENCES.CSV> <PLAYER_AVAILABILITIES.CSV> <BOSSES.CSV> <BASE_TEAMS.CSV>
+python3 -m msm_scheduler.driver <PATH-TO-CONFIG-YAML>
 ```
 
 ### Test
 ```
-python3 -m msm_scheduler.test
+python3 -m msm_scheduler.tests.csv_test
+python3 -m msm_scheduler.tests.sanity_test
 ```
