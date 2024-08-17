@@ -66,5 +66,6 @@ credentials.db
 
 # google sheetz
 token.json
-
+credentials.json
+gapi_credentials.json
 config.yml

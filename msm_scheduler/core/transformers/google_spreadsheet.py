@@ -4,12 +4,14 @@ import re
 DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday',
                 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
+
 class GoogleSpreadSheetTransformer():
 
     def __init__(self, df):
         self.df = df
 
-    def transform(self, df):
+    def transform(self):
+        df = self.df
         # Clean data
         df["MDC"] = df["Max Damage Cap (in M)"]
         df["MDC"] = df["MDC"].astype(float)
@@ -21,12 +23,12 @@ class GoogleSpreadSheetTransformer():
         df.dropna(subset=['Max Damage Cap (in M)', 'HP (in K)'], inplace=True)
 
         # Mising entry in experience column is set to 0
-        for boss in ['Lotus', 'Normal Damien', 'Hard Damien', 'Lucid']:
+        for boss in ['Lotus', 'Normal Damien', 'Hard Damien', 'Lucid', 'Will']:
             df[boss] = pd.to_numeric(df[boss])
             df[boss] = df[boss].fillna(0).astype(int)
 
         df.reset_index(drop=True, inplace=True)
-        return self._format_data(df)
+        return self._format_data()
 
     def _replace_n_plus_func(self, match):
         # Extract the number before the "+" symbol
@@ -43,11 +45,13 @@ class GoogleSpreadSheetTransformer():
             return ""
         return re.sub(r"(\d+)\+", self._replace_n_plus_func, s)
 
-    def _format_data(self, df):
+    def _format_data(self):
+        df = self.df
         stats = []
         availabilities = [{d: '' for d in DAYS_OF_WEEK + ['Identity']}
-                        for i in range(df['Identity'].nunique())]
+                          for i in range(df['Identity'].nunique())]
         availability_ids = set()
+        interests = []
         experiences = []
 
         for i, row in df.iterrows():
@@ -56,11 +60,11 @@ class GoogleSpreadSheetTransformer():
 
             # === Stats
             stats.append({'arcane_power': row['Arcane Power'],
-                        'hp': row['HP'],
-                        'identity': row['Identity'],
-                        'max_damage_cap': row['MDC'],
-                        'name': row['Name'],
-                        'class': row['Class']})
+                          'hp': row['HP'],
+                          'identity': row['Identity'],
+                          'max_damage_cap': row['MDC'],
+                          'name': row['Name'],
+                          'class': row['Class']})
 
             # === Availabilities
             n_ids = len(availability_ids)
@@ -74,6 +78,21 @@ class GoogleSpreadSheetTransformer():
             # === Experiences
             experiences.append({
                 'name': row['Name'],
-                'hard_damien': row['Hard Damien']
+                'hard_damien': row['Hard Damien'],
+                'lotus': row['Lotus'],
+                'normal_damien': row['Normal Damien'],
+                'lucid': row['Lucid'],
+                'will': row['Will']
             })
-        return stats, availabilities, experiences
+
+            # === Interests
+            interests.append({
+                'name': row['Name'],
+                'hard_damien': 1 if row['Hard Damien_interest'] else 0,
+                'lotus': 1 if row['Lotus_interest'] else 0,
+                'normal_damien': 1 if row['Normal Damien_interest'] else 0,
+                'lucid': 1 if row['Lucid_interest'] else 0,
+                'will': 1 if row['Will_interest'] else 0
+            })
+
+        return stats, experiences, interests, availabilities
