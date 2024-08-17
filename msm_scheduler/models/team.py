@@ -1,3 +1,4 @@
+import pdb
 from typing import List
 
 from ..constants.boss import VALID_BOSSES
@@ -66,11 +67,11 @@ class Team:
         self._players = value
 
     def add_player(self, player: Player):
-        if len(self.players) >= self.boss.capacity:
+        if self.size >= self.boss.capacity:
             return False
 
         self._players.append(player)
-
+        self.player_names.append(player.name)
         player.remove_availability(self.time)
         player.remove_interest(self.boss_name)
 
@@ -83,13 +84,17 @@ class Team:
             team_mdc += player.max_damage_cap
         return team_mdc
 
+    @property
+    def size(self):
+        return len(self.players)
+
     def clear_probability(self):
         return self.mdc / self.boss.total_max_damage_cap_required
 
     def is_full(self):
         if not self.boss:
             return True
-        return len(self.players) >= self.boss.capacity
+        return self.size >= self.boss.capacity
 
     def player_available(self, player: Player):
         return self.time in player.availability

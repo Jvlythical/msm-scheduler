@@ -4,6 +4,7 @@ from typing import List
 from ..types import PlayerAvailability, PlayerExperience, PlayerInterest, PlayerStats
 from ..models import Player
 
+
 class PlayersBuilder():
     def __init__(self):
         self.availabilities = []
@@ -37,12 +38,13 @@ class PlayersBuilder():
                     continue
                 # Add these try/except blocks to let the old test.py run
                 try:
-                    hours = availability[day].split(',')
+                    hours = availability[day].replace(' ', '').split(',')
                 except AttributeError:
                     hours = availability[day]
 
                 if hours == ['']:
                     continue
+
                 times += list(map(lambda hour: f"{day}.{hour}", hours))
             try:
                 availabilities_index[availability['Identity']] = times

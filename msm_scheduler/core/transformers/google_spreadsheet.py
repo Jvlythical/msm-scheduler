@@ -48,8 +48,7 @@ class GoogleSpreadSheetTransformer():
     def _format_data(self):
         df = self.df
         stats = []
-        availabilities = [{d: '' for d in DAYS_OF_WEEK + ['Identity']}
-                          for i in range(df['Identity'].nunique())]
+        availabilities = [{d: '' for d in DAYS_OF_WEEK + ['Identity']} for i in range(df['Identity'].nunique())]
         availability_ids = set()
         interests = []
         experiences = []
@@ -59,12 +58,14 @@ class GoogleSpreadSheetTransformer():
                 continue
 
             # === Stats
-            stats.append({'arcane_power': row['Arcane Power'],
-                          'hp': row['HP'],
-                          'identity': row['Identity'],
-                          'max_damage_cap': row['MDC'],
-                          'name': row['Name'],
-                          'class': row['Class']})
+            stats.append({
+                'arcane_power': row['Arcane Power'],
+                'hp': row['HP'],
+                'identity': row['Identity'],
+                'max_damage_cap': row['MDC'],
+                'name': row['Name'],
+                'class': row['Class']
+            })
 
             # === Availabilities
             n_ids = len(availability_ids)

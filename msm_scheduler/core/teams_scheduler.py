@@ -73,33 +73,27 @@ class TeamsScheduler():
             teams = self.player_boss_teams(player, boss_name)
             self.assign_player(player, teams)
 
-    def assign(self):
+    def assign(self, verbose=True):
         # Sort bosses by difficulty, hardest first
         boss_names = list(map(lambda team: team.boss_name, self.base_teams))
         boss_names = set(boss_names)
-        bosses: List[Boss] = list(
-            map(lambda boss_name: self.bosses_index[boss_name], boss_names))
-        bosses.sort(
-            key=lambda boss: boss.total_max_damage_cap_required, reverse=True)
+        bosses: List[Boss] = list(map(lambda boss_name: self.bosses_index[boss_name], boss_names))
+        bosses.sort(key=lambda boss: boss.total_max_damage_cap_required, reverse=True)
 
         for boss in bosses:
-            print(f"=== Assigning teams for {boss.name}")
-
-            print("=== Boss Stats")
-            print(boss)
-
-            print("=== Boss Available Teams")
-            for team in self.boss_teams(boss.name):
-                print(team)
+            if verbose:
+                print(f"=== Assigning teams for {boss.name}")
+                print("=== Boss Stats")
+                print(boss)
+                print("=== Boss Available Teams")
+                for team in self.boss_teams(boss.name):
+                    print(team)
 
             while True:
                 player = self.boss_players.next_player(boss.name)
                 # Continue while there are still players to assign
                 if not player:
                     break
-
-                print("=== Assigning Player")
-                print(player)
 
                 teams: List[Team] = self.boss_teams(boss.name)
                 self.assign_player(player, teams)
@@ -124,6 +118,9 @@ class TeamsScheduler():
         # Sort team with lowest clear_propability first
         teams.sort(key=lambda team: team.clear_probability())
 
+        # # TESTING
+        # teams.sort(key=lambda team: -len(team.player_names))
+
         return teams
 
     def player_boss_teams(self, player: Player, boss_name: str):
@@ -132,8 +129,7 @@ class TeamsScheduler():
         boss_teams: List[Team] = self.boss_teams(boss_name)
 
         # Find teams that are on the same days as when the player is already running
-        teams = list(
-            filter(lambda team: team.time_by_day in availability, boss_teams))
+        teams = list(filter(lambda team: team.time_by_day in availability, boss_teams))
 
         if len(teams) == 0:
             return boss_teams

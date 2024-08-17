@@ -123,8 +123,12 @@ class Player:
             self.availability.remove(time)
 
     def remove_interest(self, boss_name: str):
-        if not boss_name in self.interests:
+        if boss_name not in self.interests:
             return
+        # Hacky, need general solution if/when we get chaos damien or hard lucid, etc
+        if boss_name == 'hard_damien':
+            if 'normal_damien' in self.interests:
+                del self.interests[self.interests.index('normal_damien')]
         del self.interests[self.interests.index(boss_name)]
 
     def __repr__(self):

@@ -32,6 +32,9 @@ class BossPlayers():
             stack = self.get(boss_name)
             stack.sort(key=lambda player: player.boss_effectiveness(boss))
 
+            # TESTING: sort players by availability
+            # stack.sort(key=lambda player: len(player.availability))
+
     def get(self, boss_name) -> List[Player]:
         stack = self.boss_stacks.get(boss_name)
         if not stack:
