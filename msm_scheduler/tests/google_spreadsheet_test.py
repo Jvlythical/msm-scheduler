@@ -38,7 +38,8 @@ config = Config(config_path)
 
 bosses = list(map(lambda row: Boss(**row), import_bosses_from_csv(config.bosses_csv_path)))
 importer = GoogleSpreadSheetImporter()
-database = Database(importer)
+database = Database(config)
+database.load_from_google_spreadsheet(importer)
 
 builder = PlayersBuilder()
 builder.with_availabilities(database.player_availabilities)

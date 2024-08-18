@@ -132,7 +132,7 @@ class Player:
                 continue
             
             # Since a player can only clear one variant a week, if they are no longer
-            # interested in the boss, this is interpretted as they are no longer
+            # interested in the boss, this is interpreted as they are no longer
             # interested in all variants. Remove all variants from their interests
             for boss_name in variants:
                 if boss_name not in self.interests:

@@ -1,3 +1,11 @@
+### Installation
+
+1. Install pyenv
+2. Install poetry
+3. Run `pyenv install <PYTHON-VERSION>`
+4. Run `pyenv local <PYTHON-VERSION>`
+5. Run `poetry install`
+
 ### Usage
 
 ```

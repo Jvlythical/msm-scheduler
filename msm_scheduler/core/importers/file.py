@@ -1,4 +1,5 @@
 import csv
+import os
 
 from ..config import Config
 
@@ -14,24 +15,36 @@ class FileImporter():
 
   @property
   def player_availabilities(self):
+    if not os.path.exists(self.config.player_availabilities_csv_path):
+      return []
+
     with open(self.config.player_availabilities_csv_path, mode='r') as file:
       rows = csv.DictReader(file)
       return CSVToPlayerAvailabilitiesTransformer(rows).tranform()
 
   @property
   def player_experiences(self):
+    if not os.path.exists(self.config.player_availabilities_csv_path):
+      return []
+
     with open(self.config.player_experiences_csv_path, mode='r') as file:
       rows = csv.DictReader(file)
       return CSVToPlayerExperiencesTransformer(rows).tranform()
 
   @property
   def player_interests(self):
+    if not os.path.exists(self.config.player_interests_csv_path):
+      return []
+
     with open(self.config.player_interests_csv_path, mode='r') as file:
       rows = csv.DictReader(file)
       return CSVToPlayerInterestsTransformer(rows).tranform()
 
   @property
   def player_stats(self):
+    if not os.path.exists(self.config.players_csv_path):
+      return []
+
     with open(self.config.players_csv_path, mode='r') as file:
       rows = csv.DictReader(file)
       return CSVToPlayersTransformer(rows).tranform()

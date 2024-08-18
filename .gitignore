@@ -1,3 +1,5 @@
+.python-version
+
 # Compiled python modules.
 *.pyc
 
@@ -67,5 +69,6 @@ credentials.db
 # google sheetz
 token.json
 credentials.json
-gapi_credentials.json
+
+# msm-scheduler
 config.yml

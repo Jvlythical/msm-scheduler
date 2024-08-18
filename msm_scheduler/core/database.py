@@ -1,16 +1,36 @@
+from .config import Config
+from .importers.file import FileImporter
 from .importers.google_spreadsheet import GoogleSpreadSheetImporter
 
 class Database():
 
-    def __init__(self, spreadsheet_importer: GoogleSpreadSheetImporter = None):
-        self.tables = [[], [], [], []]
-        if spreadsheet_importer:
-            self.tables = spreadsheet_importer.get()
+    def __init__(self, config: Config):
+        self.config = config
+        self.player_stats = []
+        self.player_experiences = []
+        self.player_interests = []
+        self.player_availabilities = []
 
-        self.player_stats = self.tables[0]
-        self.player_experiences = self.tables[1]
-        self.player_interests = self.tables[2]
-        self.player_availabilities = self.tables[3]
+    def load_from_google_spreadsheet(self, spreadsheet_importer: GoogleSpreadSheetImporter = None):
+        tables = spreadsheet_importer.get()
+        self.load_tables(tables)
+
+    def load_from_file(self, file_importer: FileImporter):
+        tables = file_importer.get()
+        self.load_tables(tables)
+
+    def load_tables(self, tables: list):
+        if tables[0]:
+            self.player_stats = tables[0]
+        
+        if tables[1]:
+            self.player_experiences = tables[1]
+
+        if tables[2]:
+            self.player_interests = tables[2]
+
+        if tables[3]:
+            self.player_availabilities = tables[3]
 
     @property
     def player_availabilities(self):
