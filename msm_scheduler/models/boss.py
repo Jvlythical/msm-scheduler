@@ -3,7 +3,6 @@ from typing import List
 from ..constants.boss import VALID_BOSSES
 from ..types import BossParams
 
-
 class Boss:
     def __init__(self, **kwargs: BossParams):
         self.capacity = kwargs.get('capacity', 0)

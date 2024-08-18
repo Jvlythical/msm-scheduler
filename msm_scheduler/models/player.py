@@ -1,11 +1,10 @@
 import pdb
 from typing import List
 
-from ..constants.boss import MAX_EXPERIENCE, MIN_EXPERIENCE
+from ..constants.boss import BOSS_VARIANTS_TABLE, MAX_EXPERIENCE, MIN_EXPERIENCE
 from ..constants.player import AVAILABILITY_USAGES
 from ..types import PlayerExperience, PlayerParams
 from .boss import Boss
-
 
 class Player:
     def __init__(self, **kwargs: PlayerParams):
@@ -105,12 +104,13 @@ class Player:
     def boss_effectiveness(self, boss: Boss):
         if not boss:
             return 0
+
         boss_experience = self.boss_experience(boss)
         boss_experience_required = boss.experience_required
         boss_total_max_damage_cap_required = boss.total_max_damage_cap_required
         max_damage_cap = self.max_damage_cap
 
-        return 114.36 * max_damage_cap / boss_total_max_damage_cap_required * boss_experience ** 0.657
+        return max_damage_cap / boss_total_max_damage_cap_required * boss_experience * 525 / boss_experience_required
 
     def remove_availability(self, time: str):
         if time not in self.availability:
@@ -125,11 +125,20 @@ class Player:
     def remove_interest(self, boss_name: str):
         if boss_name not in self.interests:
             return
-        # Hacky, need general solution if/when we get chaos damien or hard lucid, etc
-        if boss_name == 'hard_damien':
-            if 'normal_damien' in self.interests:
-                del self.interests[self.interests.index('normal_damien')]
-        del self.interests[self.interests.index(boss_name)]
+
+        # A boss can have one or more variants e.g. normal damien and hard damien
+        for variants in BOSS_VARIANTS_TABLE:
+            if boss_name not in variants:
+                continue
+            
+            # Since a player can only clear one variant a week, if they are no longer
+            # interested in the boss, this is interpretted as they are no longer
+            # interested in all variants. Remove all variants from their interests
+            for boss_name in variants:
+                if boss_name not in self.interests:
+                    continue
+
+                del self.interests[self.interests.index(boss_name)]
 
     def __repr__(self):
         return (
