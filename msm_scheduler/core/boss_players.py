@@ -17,7 +17,7 @@ class BossPlayers():
         self.players_index = {}
 
         for player in players:
-            self.players_index[player.name] = player
+            self.players_index[player.name.strip()] = player
 
         self.players = players
         self.boss_stacks = {}

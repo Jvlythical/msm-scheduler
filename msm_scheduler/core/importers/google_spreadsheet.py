@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import pdb
+import tempfile
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -8,7 +9,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from ..transformers.google_spreadsheet import GoogleSpreadSheetTransformer
+from .file import FileImporter
+from ..config import Config
 from ...constants.gapi import CREDENTIALS_FILE_NAME, SCOPES, TOKEN_FILE_NAME
 
 SHEET_ID = "1B0Yq3AJXZNYVdVV0BpAFWIfRCxL17VsMrnmMxmXePmA"
@@ -49,7 +51,9 @@ class GoogleSpreadSheetImporter():
         return creds
 
     def get(self, columns=None):
+        config = Config()
         columns = columns or self.google_spreadsheet_columns
+
         try:
             service = build("sheets", "v4", credentials=self.gapi_credentials)
 
@@ -60,15 +64,31 @@ class GoogleSpreadSheetImporter():
                 return self._get_google_spreadsheet_range(sheet, columns[0])
 
             data_frames = [self._get_google_spreadsheet_range(sheet, col) for col in columns]
-
-            df = pd.merge(data_frames[0], data_frames[1], on="Name", how="left")
-            df = pd.merge(df, data_frames[2], on="Name", how="left")
-            df = pd.merge(df, data_frames[3], on="Identity", how="left")
         except HttpError as err:
             print(err)
             return [[], [], [], []]
 
-        return GoogleSpreadSheetTransformer(df).transform()
+        df = pd.DataFrame(data_frames[0])
+        with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
+            config.players_csv_path = tmp.name
+            tmp.write(df.to_csv())
+
+        df = pd.merge(df, data_frames[1])
+        with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
+            config.player_experiences_csv_path = tmp.name
+            tmp.write(df.to_csv())
+
+        df = pd.merge(df, data_frames[2])
+        with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
+            config.player_interests_csv_path = tmp.name
+            tmp.write(df.to_csv())
+
+        df = pd.merge(df, data_frames[3])
+        with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
+            config.player_availabilities_csv_path = tmp.name
+            tmp.write(df.to_csv())
+
+        return FileImporter(config).get()
 
     def _get_google_spreadsheet_range(self, sheet, sheet_range):
         result = sheet.values().get(spreadsheetId=self.sheet_id, range=sheet_range).execute()
