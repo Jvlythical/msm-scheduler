@@ -58,6 +58,7 @@ class TeamsScheduler():
         return self.boss_players.players_index
 
     def assign_player(self, player: Player, teams: List[Team]):
+        assigned = False
         player_teams: List[Team] = self.player_teams_index[player.name]
 
         for team in teams:
@@ -65,8 +66,10 @@ class TeamsScheduler():
                 continue
 
             if team.add_player(player):
+                assigned = True
                 player_teams.append(team)
                 break
+        return assigned
 
     def assign_player_interests(self, player: Player):
         for boss_name in player.interests:
@@ -96,8 +99,8 @@ class TeamsScheduler():
                     break
 
                 teams: List[Team] = self.boss_teams(boss.name)
-                self.assign_player(player, teams)
-                self.assign_player_interests(player)
+                if self.assign_player(player, teams):
+                    self.assign_player_interests(player)
 
                 filled = True
                 for team in teams:

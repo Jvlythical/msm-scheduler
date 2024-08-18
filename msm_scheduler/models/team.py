@@ -97,6 +97,9 @@ class Team:
         return self.size >= self.boss.capacity
 
     def player_available(self, player: Player):
+        for assigned_player in self.players:
+            if player.identity == assigned_player.identity:
+                return False
         return self.time in player.availability
 
     def __repr__(self):
