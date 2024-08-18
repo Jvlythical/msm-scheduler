@@ -1,6 +1,8 @@
 import os
 import pdb
 
+from typing import List
+
 from .core.boss_players import BossPlayers
 from .core.config import Config
 from .core.database import Database
@@ -9,8 +11,7 @@ from .core.importers.google_spreadsheet import GoogleSpreadSheetImporter
 from .core.import_base_teams import import_base_teams_from_csv
 from .core.import_bosses import import_bosses_from_csv
 from .core.players_builder import PlayersBuilder
-from .core.teams_scheduler import TeamsScheduler
-from .models import Boss, Team
+from .models import Boss, Player, Team
 
 config = Config()
 database = Database(config)
@@ -30,12 +31,16 @@ builder.with_stats(database.player_stats)
 players = builder.build()
 
 boss_players = BossPlayers(players=players, bosses=bosses)
-scheduler = TeamsScheduler(boss_players, base_teams)
-scheduler.assign()
+availability_distribution = boss_players.availability_distribution()
 
-for team in base_teams:
-    print(f"=== {team.boss_name} Team at {team.time}, filled {len(team.players)}/{team.boss.capacity}")
-    for player in team.players:
-        print(f"{player.name}")
-    print(f"\nClear probability: {team.clear_probability()}")
+for boss_name in availability_distribution:
+  times = availability_distribution[boss_name]
+  print(f"=== {boss_name} availability distribution")
 
+  sorted_times = list(times.keys())
+  sorted_times.sort()
+  for time in sorted_times:
+    key = "{:<15}".format(time)
+    print(f"{key}: {' '.join(times[time])}")
+
+  print("")

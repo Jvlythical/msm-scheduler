@@ -1,3 +1,4 @@
+import pdb
 import re
 
 DELIMITTER = ','
@@ -30,7 +31,7 @@ class CSVToPlayerAvailabilitiesTransformer():
       # Extract the number before the "+" symbol
       n = int(match.group(1))
       # Generate the sequence from n to 23
-      replacement = ",".join(str(i) for i in range(n, 24))
+      replacement = DELIMITTER.join(str(i) for i in range(n, 24))
       return replacement
 
   def _replace_n_plus(self, s):

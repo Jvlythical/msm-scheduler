@@ -24,7 +24,10 @@ class BossPlayers():
         # Organize players by bosses they are interested in
         for player in players:
             for boss_name in player.interests:
-                self.get(boss_name).append(player)
+                boss_stack = self.get(boss_name)
+                boss: Boss = self.bosses_index[boss_name]
+                if player.hp >= boss.hp_required and player.arcane_power >= boss.arcane_power_required:
+                    boss_stack.append(player)
 
         # For each boss, sort players with highest effectiveness last
         for boss_name in self.boss_stacks:
@@ -34,6 +37,21 @@ class BossPlayers():
 
             # TESTING: sort players by availability
             # stack.sort(key=lambda player: len(player.availability))
+
+    def availability_distribution(self):
+        boss_availability_distribution = {}
+        for boss_name in self.boss_stacks:
+            availability_distribution = {}
+
+            boss_availability_distribution[boss_name] = availability_distribution
+
+            players: List[Player] = self.boss_stacks[boss_name]
+            for player in players:
+                for time in player.availability:
+                    if time not in availability_distribution:
+                        availability_distribution[time] = []
+                    availability_distribution[time].append(player.name)
+        return boss_availability_distribution
 
     def get(self, boss_name) -> List[Player]:
         stack = self.boss_stacks.get(boss_name)

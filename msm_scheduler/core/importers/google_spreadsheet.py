@@ -73,17 +73,17 @@ class GoogleSpreadSheetImporter():
             config.players_csv_path = tmp.name
             tmp.write(df.to_csv())
 
-        df = pd.merge(df, data_frames[1])
+        df = pd.DataFrame(data_frames[1])
         with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
             config.player_experiences_csv_path = tmp.name
             tmp.write(df.to_csv())
 
-        df = pd.merge(df, data_frames[2])
+        df = pd.DataFrame(data_frames[2])
         with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
             config.player_interests_csv_path = tmp.name
             tmp.write(df.to_csv())
 
-        df = pd.merge(df, data_frames[3])
+        df = pd.DataFrame(data_frames[3])
         with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
             config.player_availabilities_csv_path = tmp.name
             tmp.write(df.to_csv())

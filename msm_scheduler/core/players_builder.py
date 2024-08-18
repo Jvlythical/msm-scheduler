@@ -30,26 +30,24 @@ class PlayersBuilder():
 
     def build_availabilities_index(self):
         availabilities_index = {}
-        # Ensure that players with the same identity have the same availability reference
-        for availability in self.availabilities:
-            times = []
-            for day in availability:
-                if day == 'Identity':
-                    continue
-                # Add these try/except blocks to let the old test.py run
-                try:
-                    hours = availability[day].replace(' ', '').split(',')
-                except AttributeError:
-                    hours = availability[day]
 
+        availabilities = self.availabilities.copy()
+
+        # Ensure that players with the same identity have the same availability reference
+        for availability in availabilities:
+            identity = availability['identity']
+            del availability['identity']
+            availabilities_index[identity] = []
+
+            for day in availability:
+                hours = availability[day]
+
+                # Should find out why empty string is set
                 if hours == ['']:
                     continue
 
-                times += list(map(lambda hour: f"{day}.{hour}", hours))
-            try:
-                availabilities_index[availability['Identity']] = times
-            except KeyError:
-                availabilities_index[availability['identity']] = times
+                availabilities_index[identity] += list(map(lambda hour: f"{day.strip()}.{hour.strip()}", hours))
+        
         return availabilities_index
 
     def build_experiences_index(self):

@@ -8,8 +8,14 @@
 
 ### Usage
 
+#### Schedule
 ```
-python3 -m msm_scheduler.driver <PATH-TO-CONFIG-YAML>
+python3 -m msm_scheduler.schedule
+```
+
+#### Availability
+```
+python3 -m msm_scheduler.availability
 ```
 
 ### Test

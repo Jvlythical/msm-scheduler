@@ -5,6 +5,7 @@ from ..types import BossParams
 
 class Boss:
     def __init__(self, **kwargs: BossParams):
+        self.arcane_power_required = kwargs.get('arcane_power_required', 0)
         self.capacity = kwargs.get('capacity', 0)
         self.clear_probability = kwargs.get('clear_probability', 0)
         self.experience_required = kwargs.get('experience_required', 0)
@@ -12,6 +13,16 @@ class Boss:
         self.name = kwargs.get('name', '')
         self.total_max_damage_cap_required = kwargs.get(
             'total_max_damage_cap_required', 0)  # Renamed property
+
+    @property
+    def arcane_power_required(self):
+        return self._arcane_power_required
+
+    @arcane_power_required.setter
+    def arcane_power_required(self, value: int):
+        if value < 0:
+            raise ValueError("capacity must be a positive integer")
+        self._arcane_power_required = value
 
     @property
     def capacity(self):
