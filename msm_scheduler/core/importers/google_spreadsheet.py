@@ -30,8 +30,7 @@ class GoogleSpreadSheetImporter():
         # created automatically when the authorization flow completes for the first
         # time.
         if os.path.exists(CREDENTIALS_FILE_NAME):
-            creds = Credentials.from_authorized_user_file(
-                CREDENTIALS_FILE_NAME, SCOPES)
+            creds = Credentials.from_authorized_user_file(CREDENTIALS_FILE_NAME, SCOPES)
         else:
             creds = None
 
@@ -40,8 +39,7 @@ class GoogleSpreadSheetImporter():
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    "credentials.json", SCOPES)
+                flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
                 creds = flow.run_local_server(port=0)
             # Save the credentials for the next run
             with open(CREDENTIALS_FILE_NAME, "w") as token:
@@ -51,17 +49,18 @@ class GoogleSpreadSheetImporter():
 
     def get(self, columns=None):
         columns = columns or self.google_spreadsheet_columns
-
         try:
             service = build("sheets", "v4", credentials=self.gapi_credentials)
 
             # Import data
             sheet = service.spreadsheets()
 
-            data_frames = [self._get_google_spreadsheet_range(
-                sheet, col) for col in columns]
-            df = pd.merge(data_frames[0],
-                          data_frames[1], on="Name", how="left")
+            if len(columns) == 1:
+                return self._get_google_spreadsheet_range(sheet, columns[0])
+
+            data_frames = [self._get_google_spreadsheet_range(sheet, col) for col in columns]
+
+            df = pd.merge(data_frames[0], data_frames[1], on="Name", how="left")
             df = pd.merge(df, data_frames[2], on="Name", how="left")
             df = pd.merge(df, data_frames[3], on="Identity", how="left")
         except HttpError as err:

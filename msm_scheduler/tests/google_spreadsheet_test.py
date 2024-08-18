@@ -47,7 +47,6 @@ builder.with_interests(database.player_interests)
 builder.with_stats(database.player_stats)
 players = builder.build()
 
-
 base_teams = construct_base_teams(players)
 boss_players = BossPlayers(players=players, bosses=bosses)
 scheduler = TeamsScheduler(boss_players, base_teams)
