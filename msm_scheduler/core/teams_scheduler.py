@@ -2,9 +2,11 @@ import pdb
 
 from typing import List
 
+from ..lib.logger import bcolors, Logger
 from ..models import Boss, Player, Team
 from .boss_players import BossPlayers
 
+LOG_ID = 'TeamsScheduler'
 
 class TeamsScheduler():
 
@@ -76,7 +78,7 @@ class TeamsScheduler():
             teams = self.player_boss_teams(player, boss_name)
             self.assign_player(player, teams)
 
-    def assign(self, verbose=True):
+    def assign(self):
         # Sort bosses by difficulty, hardest first
         boss_names = list(map(lambda team: team.boss_name, self.base_teams))
         boss_names = set(boss_names)
@@ -84,13 +86,12 @@ class TeamsScheduler():
         bosses.sort(key=lambda boss: boss.total_max_damage_cap_required, reverse=True)
 
         for boss in bosses:
-            if verbose:
-                print(f"=== Assigning teams for {boss.name}")
-                print("=== Boss Stats")
-                print(boss)
-                print("=== Boss Available Teams")
-                for team in self.boss_teams(boss.name):
-                    print(team)
+            not_assigned = []
+            Logger.instance(LOG_ID).info(f"{bcolors.OKBLUE}Assigning teams for {boss.name}{bcolors.ENDC}")
+            Logger.instance(LOG_ID).info(boss)
+            Logger.instance(LOG_ID).info(f"{bcolors.OKCYAN}Boss Available Teams{bcolors.ENDC}")
+            for team in self.boss_teams(boss.name):
+                Logger.instance(LOG_ID).info(team)
 
             while True:
                 player = self.boss_players.next_player(boss.name)
@@ -101,6 +102,8 @@ class TeamsScheduler():
                 teams: List[Team] = self.boss_teams(boss.name)
                 if self.assign_player(player, teams):
                     self.assign_player_interests(player)
+                else:
+                    not_assigned.append(player)
 
                 filled = True
                 for team in teams:
@@ -111,6 +114,10 @@ class TeamsScheduler():
                 # Continue while teams are not filled
                 if filled:
                     break
+            
+            Logger.instance(LOG_ID).warn(f"{bcolors.WARNING}Could not assign the following players{bcolors.ENDC}")
+            for player in not_assigned:
+                print(f"{player.name}")
 
     def boss_teams(self, boss_name: str):
         teams: List[Team] = self.boss_teams_index.get(boss_name)

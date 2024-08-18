@@ -12,7 +12,10 @@ from .core.import_base_teams import import_base_teams_from_csv
 from .core.import_bosses import import_bosses_from_csv
 from .core.players_builder import PlayersBuilder
 from .core.teams_scheduler import TeamsScheduler
-from .models import Boss, Player, Team
+from .lib.logger import bcolors, Logger
+from .models import Boss, Team
+
+LOG_ID = 'Schedule'
 
 config = Config()
 database = Database(config)
@@ -36,7 +39,8 @@ scheduler = TeamsScheduler(boss_players, base_teams)
 scheduler.assign()
 
 for team in base_teams:
-    print(f"=== {team.boss_name} Team at {team.time}, filled {len(team.players)}/{team.boss.capacity}")
+    Logger.instance(LOG_ID).info(f"{bcolors.OKBLUE}{team.boss_name} team at {team.time}{bcolors.ENDC}")
+    Logger.instance(LOG_ID).info(f"{bcolors.OKCYAN}Filled {len(team.players)}/{team.boss.capacity}{bcolors.ENDC}")
     for player in team.players:
         print(f"{player.name}")
     print(f"\nClear probability: {team.clear_probability()}")
