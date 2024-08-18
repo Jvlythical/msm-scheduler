@@ -46,7 +46,7 @@ class PlayersBuilder():
                 if hours == ['']:
                     continue
 
-                availabilities_index[identity] += list(map(lambda hour: f"{day}.{hour}", hours))
+                availabilities_index[identity] += list(map(lambda hour: f"{day.strip()}.{hour.strip()}", hours))
         
         return availabilities_index
 
