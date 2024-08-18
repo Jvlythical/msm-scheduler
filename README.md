@@ -10,18 +10,29 @@
 
 #### Schedule
 ```
-python3 -m msm_scheduler.schedule
+poetry run python3 -m msm_scheduler.schedule
 ```
 
 #### Availability
 ```
-python3 -m msm_scheduler.availability
+poetry run python3 -m msm_scheduler.availability
 ```
 
 ### Test
+
+#### Run all
 ```
 ./test_scripts.sh
-python3 -m msm_scheduler.tests.csv_test
-python3 -m msm_scheduler.tests.sanity_test
-python3 -m msm_scheduler.tests.google_spreadsheet_test
+```
+
+#### Run Individual
+```
+poetry run python3 -m msm_scheduler.tests.csv_test
+```
+```
+poetry run python3 -m msm_scheduler.tests.sanity_test
+```
+```
+poetry run python3 -m msm_scheduler.tests.google_spreadsheet_test
+
 ```
