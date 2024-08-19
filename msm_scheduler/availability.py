@@ -1,7 +1,4 @@
-import os
 import pdb
-
-from typing import List
 
 from .core.boss_players import BossPlayers
 from .core.config import Config
@@ -11,7 +8,10 @@ from .core.importers.google_spreadsheet import GoogleSpreadSheetImporter
 from .core.import_base_teams import import_base_teams_from_csv
 from .core.import_bosses import import_bosses_from_csv
 from .core.players_builder import PlayersBuilder
-from .models import Boss, Player, Team
+from .lib.logger import bcolors, Logger
+from .models import Boss, Team
+
+LOG_ID = 'Availability'
 
 config = Config()
 database = Database(config)
@@ -34,8 +34,10 @@ boss_players = BossPlayers(players=players, bosses=bosses)
 availability_distribution = boss_players.availability_distribution()
 
 for boss_name in availability_distribution:
+  Logger.instance(LOG_ID).info(f"{bcolors.OKBLUE}{boss_name} availability distribution{bcolors.ENDC}")
+  Logger.instance(LOG_ID).info(f"{bcolors.OKCYAN}There are {len(boss_players.get(boss_name))} available players{bcolors.ENDC}")
+
   times = availability_distribution[boss_name]
-  print(f"=== {boss_name} availability distribution")
 
   sorted_times = list(times.keys())
   sorted_times.sort()

@@ -1,7 +1,4 @@
-import os
 import pdb
-
-from typing import List
 
 from .core.boss_players import BossPlayers
 from .core.config import Config
@@ -44,4 +41,3 @@ for team in base_teams:
     for player in team.players:
         print(f"{player.name}")
     print(f"\nClear probability: {team.clear_probability()}")
-
