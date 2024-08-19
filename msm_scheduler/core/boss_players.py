@@ -31,12 +31,13 @@ class BossPlayers():
                     boss_stack.append(player)
 
         bem = BossEffectivenessModel()
+        # bem.fit()
+
         # For each boss, sort players with highest effectiveness last
         for boss_name in self.boss_stacks:
             boss = self.bosses_index.get(boss_name)
             stack = self.get(boss_name)
             stack.sort(key=lambda player: bem.rate(player, boss))
-            # stack.sort(key=lambda player: player.boss_effectiveness(boss))
 
             # TESTING: sort players by availability
             # stack.sort(key=lambda player: len(player.availability))

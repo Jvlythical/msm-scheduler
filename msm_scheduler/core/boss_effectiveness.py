@@ -7,8 +7,6 @@ from scipy.optimize import curve_fit
 from ..core.importers.google_spreadsheet import GoogleSpreadSheetImporter
 from ..models import Boss, Player
 
-SHEET_ID = "1B0Yq3AJXZNYVdVV0BpAFWIfRCxL17VsMrnmMxmXePmA"
-
 
 def model(X, *params):
     n = len(X)
@@ -27,7 +25,8 @@ class BossEffectivenessModel():
     def __init__(self):
         dirname = os.path.dirname(__file__)
         self.save_path = os.path.join(dirname, 'boss_effectiveness_params.npz')
-
+        self.sheet_id = "1B0Yq3AJXZNYVdVV0BpAFWIfRCxL17VsMrnmMxmXePmA"
+        self.sheet_range = ['Boss Effectiveness!A1:E']
         try:
             # attempt to load model parameters
             loaded_data = np.load(self.save_path)
@@ -38,9 +37,9 @@ class BossEffectivenessModel():
             self.params = None
             self.norms = None
 
-    def fit(self, sheet_id, sheet_range):
-        sheet = GoogleSpreadSheetImporter(sheet_id)
-        df = sheet.get(sheet_range)
+    def fit(self):
+        sheet = GoogleSpreadSheetImporter(self.sheet_id)
+        df = sheet.get(self.sheet_range)
         df = df.map(lambda x: pd.to_numeric(x, errors='coerce'))
 
         A_raw = df.to_numpy()
