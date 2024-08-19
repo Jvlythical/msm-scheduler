@@ -6,6 +6,7 @@ from ..constants.player import AVAILABILITY_USAGES
 from ..types import PlayerExperience, PlayerParams
 from .boss import Boss
 
+
 class Player:
     def __init__(self, **kwargs: PlayerParams):
         self.arcane_power = kwargs.get('arcane_power', 0)
@@ -94,6 +95,8 @@ class Player:
         self._experience = {k: value[k] for k in sorted(value)}
 
     def boss_experience(self, boss: Boss):
+        if boss.name not in self.experience:
+            return MIN_EXPERIENCE
         player_experience = self.experience[boss.name]
         if player_experience < MIN_EXPERIENCE:
             return MIN_EXPERIENCE
@@ -130,7 +133,7 @@ class Player:
         for variants in BOSS_VARIANTS_TABLE:
             if boss_name not in variants:
                 continue
-            
+
             # Since a player can only clear one variant a week, if they are no longer
             # interested in the boss, this is interpreted as they are no longer
             # interested in all variants. Remove all variants from their interests

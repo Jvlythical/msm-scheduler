@@ -51,10 +51,10 @@ players = builder.build()
 base_teams = construct_base_teams(players)
 boss_players = BossPlayers(players=players, bosses=bosses)
 scheduler = TeamsScheduler(boss_players, base_teams)
-scheduler.assign(verbose=False)
+scheduler.assign()
 
 for idx, team in enumerate(base_teams):
-    if len(team.player_names) != 10:
+    if len(team.player_names) == 10:
         continue
     # if len(team.player_names) == 0:
     #     continue

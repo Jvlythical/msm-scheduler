@@ -93,7 +93,7 @@ class Team:
         team_mdc = 0
         for player in self.players:
             team_mdc += player.max_damage_cap
-        return team_mdc 
+        return team_mdc
 
     @property
     def size(self):

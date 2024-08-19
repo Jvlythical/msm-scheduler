@@ -3,6 +3,7 @@ import pdb
 from typing import List, Union
 
 from ..models import Boss, Player
+from .boss_effectiveness import BossEffectivenessModel
 
 
 class BossPlayers():
@@ -29,11 +30,13 @@ class BossPlayers():
                 if player.hp >= boss.hp_required and player.arcane_power >= boss.arcane_power_required:
                     boss_stack.append(player)
 
+        bem = BossEffectivenessModel()
         # For each boss, sort players with highest effectiveness last
         for boss_name in self.boss_stacks:
             boss = self.bosses_index.get(boss_name)
             stack = self.get(boss_name)
-            stack.sort(key=lambda player: player.boss_effectiveness(boss))
+            stack.sort(key=lambda player: bem.rate(player, boss))
+            # stack.sort(key=lambda player: player.boss_effectiveness(boss))
 
             # TESTING: sort players by availability
             # stack.sort(key=lambda player: len(player.availability))
