@@ -1,4 +1,6 @@
+import numpy as np
 import pdb
+
 from typing import List
 
 from ..constants.boss import VALID_BOSSES
@@ -78,18 +80,34 @@ class Team:
         return True
 
     @property
+    def experience(self):
+        team_experience = 0
+        if len(self.players) == 0:
+            return 0
+        for player in self.players:
+            team_experience += player.boss_experience(self.boss)
+        return team_experience / len(self.players)
+
+    @property
     def mdc(self):
         team_mdc = 0
         for player in self.players:
             team_mdc += player.max_damage_cap
-        return team_mdc
+        return team_mdc 
 
     @property
     def size(self):
         return len(self.players)
 
     def clear_probability(self):
-        return self.mdc / self.boss.total_max_damage_cap_required
+        e = self.experience
+        d = self.boss.experience_required
+
+        x = self.mdc / self.boss.total_max_damage_cap_required
+        k = 0.5 * e + 0.3 * d - 2
+        x0 = 0.2 * e + 0.1 * d - 0.5
+
+        return round(self._logistic(x, k, x0), 2)
 
     def is_full(self):
         if not self.boss:
@@ -101,6 +119,9 @@ class Team:
             if player.identity == assigned_player.identity:
                 return False
         return self.time in player.availability
+
+    def _logistic(self, x, k, x0):
+        return 1 / (1 + np.exp(-k * (x - x0)))
 
     def __repr__(self):
         return (f"Team(boss_name={self.boss_name}, player_names={self.player_names}, "
