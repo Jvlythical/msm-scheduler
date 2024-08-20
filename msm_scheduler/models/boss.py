@@ -3,16 +3,16 @@ from typing import List
 from ..constants.boss import VALID_BOSSES
 from ..types import BossParams
 
+
 class Boss:
     def __init__(self, **kwargs: BossParams):
         self.arcane_power_required = kwargs.get('arcane_power_required', 0)
         self.capacity = kwargs.get('capacity', 0)
         self.clear_probability = kwargs.get('clear_probability', 0)
-        self.experience_required = kwargs.get('experience_required', 0)
+        self.difficulty = kwargs.get('difficulty', 0)
         self.hp_required = kwargs.get('hp_required', 0)  # New property
         self.name = kwargs.get('name', '')
-        self.total_max_damage_cap_required = kwargs.get(
-            'total_max_damage_cap_required', 0)  # Renamed property
+        self.total_max_damage_cap_required = kwargs.get('total_max_damage_cap_required', 0)  # Renamed property
 
     @property
     def arcane_power_required(self):
@@ -35,14 +35,14 @@ class Boss:
         self._capacity = value
 
     @property
-    def experience_required(self):
-        return self._experience_required
+    def difficulty(self):
+        return self._difficulty
 
-    @experience_required.setter
-    def experience_required(self, value: int):
+    @difficulty.setter
+    def difficulty(self, value: int):
         if value < 0:
-            raise ValueError("experience_required must be a positive integer")
-        self._experience_required = value
+            raise ValueError("difficulty must be a positive integer")
+        self._difficulty = value
 
     @property
     def hp_required(self):
@@ -79,6 +79,6 @@ class Boss:
     def __repr__(self):
         return (
             f"Boss(name={self.name}, total_max_damage_cap_required={self.total_max_damage_cap_required}, "
-            f"experience_required={self.experience_required}, clear_probability={self.clear_probability}, "
+            f"difficulty={self.difficulty}, clear_probability={self.clear_probability}, "
             f"capacity={self.capacity}, hp_required={self.hp_required})"
         )

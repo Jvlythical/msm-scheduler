@@ -5,7 +5,6 @@ import numpy as np
 from sklearn.preprocessing import normalize
 from scipy.optimize import curve_fit
 from ..core.importers.google_spreadsheet import GoogleSpreadSheetImporter
-from ..models import Boss, Player
 
 
 def model(X, *params):
@@ -20,13 +19,13 @@ def model(X, *params):
     return result
 
 
-class BossEffectivenessModel():
+class TeamClearProbabilityModel():
     # Model only needs to be fit once as the model parameters are cached
     def __init__(self):
         dirname = os.path.dirname(__file__)
-        self.save_path = os.path.join(dirname, 'boss_effectiveness_params.npz')
+        self.save_path = os.path.join(dirname, 'team_clear_prbs.npz')
         self.sheet_id = "1B0Yq3AJXZNYVdVV0BpAFWIfRCxL17VsMrnmMxmXePmA"
-        self.sheet_range = ['Boss Effectiveness!A1:E']
+        self.sheet_range = ['Team Clear Probability!A1:E']
         try:
             # attempt to load model parameters
             loaded_data = np.load(self.save_path)
@@ -52,18 +51,18 @@ class BossEffectivenessModel():
 
         np.savez(self.save_path, params=self.params, norms=self.norms)
 
-    def transform(self, experience, difficulty='', boss_mdc_req='', player_mdc=''):
+    def transform(self, experience, difficulty='', boss_mdc_req='', team_mdc=''):
         if isinstance(experience, (int, float, list)):
             experience = np.array(experience, dtype=np.float64)
             difficulty = np.array(difficulty, dtype=np.float64)
             boss_mdc_req = np.array(boss_mdc_req, dtype=np.float64)
-            player_mdc = np.array(player_mdc, dtype=np.float64)
+            team_mdc = np.array(team_mdc, dtype=np.float64)
         elif isinstance(experience, np.ndarray):
             mat = experience
             experience = mat[:, 0].astype(np.float64)
             difficulty = mat[:, 1].astype(np.float64)
             boss_mdc_req = mat[:, 2].astype(np.float64)
-            player_mdc = mat[:, 3].astype(np.float64)
+            team_mdc = mat[:, 3].astype(np.float64)
 
         if ((1 > experience) | (experience > 10)).any():
             raise ValueError("Experience must be between 1 and 10")
@@ -73,17 +72,9 @@ class BossEffectivenessModel():
         experience = experience / self.norms[0]
         difficulty = difficulty / self.norms[1]
         boss_mdc_req = boss_mdc_req / self.norms[2]
-        player_mdc = player_mdc / self.norms[3]
-        y = model((experience, difficulty, boss_mdc_req, player_mdc), *self.params)
+        team_mdc = team_mdc / self.norms[3]
+
+        y = model((experience, difficulty, boss_mdc_req, team_mdc), *self.params)
         y_scaled = self.norms[-1] * y
-
-        # simple transformation to get rid of negatives
-        return y_scaled + 30
-
-    def rate(self, player: Player, boss: Boss):
-        return self.transform(
-            player.boss_experience(boss),
-            boss.difficulty if boss.difficulty > 0 else 1,
-            boss.total_max_damage_cap_required,
-            player.max_damage_cap
-        )
+        # constrain values to interval [0,1]
+        return np.clip(y_scaled, 0, 1)

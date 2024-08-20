@@ -7,6 +7,7 @@ from ..constants.boss import VALID_BOSSES
 from ..types import TeamParams
 from .boss import Boss
 from .player import Player
+from ..core.team_clear_prbs import TeamClearProbabilityModel
 
 
 class Team:
@@ -16,6 +17,8 @@ class Team:
         self.boss_name = kwargs.get('boss_name')
         self.player_names = kwargs.get('player_names', [])
         self.players = []
+        self.tcpm = TeamClearProbabilityModel()
+        # self.tcpm.fit()
 
     @property
     def time(self):
@@ -100,14 +103,25 @@ class Team:
         return len(self.players)
 
     def clear_probability(self):
+        if self.size == 0:
+            return 0
         e = self.experience
-        d = self.boss.experience_required
+        d = self.boss.difficulty
+        m0 = self.boss.total_max_damage_cap_required
+        m = self.mdc
+        return self.tcpm.transform(e, d, m0, m)
 
-        x = self.mdc / self.boss.total_max_damage_cap_required
-        k = 0.5 * e + 0.3 * d - 2
-        x0 = 0.2 * e + 0.1 * d - 0.5
-
-        return round(self._logistic(x, k, x0), 2)
+    # def clear_probability(self):
+    #     e = self.experience
+    #     d = self.boss.difficulty
+    #
+    #     x = self.mdc / self.boss.total_max_damage_cap_required
+    #     k = 0.5 * e + 0.3 * d - 2
+    #     x0 = 0.2 * e + 0.1 * d - 0.5
+    #
+    #     return round(self._logistic(x, k, x0), 2)
+    # def _logistic(self, x, k, x0):
+    #     return 1 / (1 + np.exp(-k * (x - x0)))
 
     def is_full(self):
         if not self.boss:
@@ -119,9 +133,6 @@ class Team:
             if player.identity == assigned_player.identity:
                 return False
         return self.time in player.availability
-
-    def _logistic(self, x, k, x0):
-        return 1 / (1 + np.exp(-k * (x - x0)))
 
     def __repr__(self):
         return (f"Team(boss_name={self.boss_name}, player_names={self.player_names}, "

@@ -109,11 +109,11 @@ class Player:
             return 0
 
         boss_experience = self.boss_experience(boss)
-        boss_experience_required = boss.experience_required if boss.experience_required > 0 else 1
+        boss_difficulty = boss.difficulty if boss.difficulty > 0 else 1
         boss_total_max_damage_cap_required = boss.total_max_damage_cap_required
         max_damage_cap = self.max_damage_cap
 
-        return max_damage_cap / boss_total_max_damage_cap_required * boss_experience * 525 / boss_experience_required
+        return max_damage_cap / boss_total_max_damage_cap_required * boss_experience * 525 / boss_difficulty
 
     def remove_availability(self, time: str):
         if time not in self.availability:

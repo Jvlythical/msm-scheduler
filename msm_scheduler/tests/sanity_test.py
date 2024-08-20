@@ -12,7 +12,7 @@ base_teams = [
     Team(time="tuesday.19", boss_name=HARD_DAMIEN, player_names=[])
 ]
 bosses = [
-    Boss(name=HARD_DAMIEN, total_max_damage_cap_required=400, experience=1000,
+    Boss(name=HARD_DAMIEN, total_max_damage_cap_required=400, difficulty=10,
          clear_probability=75, availability=["Monday", "Wednesday"], capacity=3, hp_required=80)
 ]
 
@@ -61,7 +61,6 @@ players = builder.build()
 
 boss_players = BossPlayers(players=players, bosses=bosses)
 scheduler = TeamsScheduler(boss_players, base_teams)
-
 scheduler.assign()
 
 for idx, team in enumerate(base_teams):

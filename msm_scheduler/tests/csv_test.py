@@ -41,5 +41,4 @@ for team in base_teams:
     print(f"=== {team.boss_name} Team at {team.time}, filled {len(team.players)}/{team.boss.capacity}")
     for player in team.players:
         print(f"{player.name}")
-    print(f"\nClear probability: {team.clear_probability()}")
-
+    print(f"\nClear probability: {team.clear_probability()}. Team MDC: {team.mdc}. Team EXP: {team.experience}. Boss Diff: {team.boss.difficulty}")
