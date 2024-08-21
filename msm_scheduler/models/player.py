@@ -77,7 +77,11 @@ class Player:
 
     @interests.setter
     def interests(self, value: dict):
-        self._interests = list(value.keys())
+        interests = []
+        for boss_name in value:
+            if value[boss_name]:
+                interests.append(boss_name)
+        self._interests = interests
 
     @property
     def experience(self):

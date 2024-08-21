@@ -1,6 +1,6 @@
 Name,HP Required,Total Max Damage Cap Required,Arcane Power Required,Difficulty,Capacity
 lotus,100,150,,5,10
-hard_damien,220,350,,10,10
+hard_damien,180,350,,10,10
 normal_damien,190,250,,5,10
-lucid,220,300,660,5,10
+lucid,150,300,660,5,10
 will,,,,,10
