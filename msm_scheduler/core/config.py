@@ -6,11 +6,12 @@ FILE_NAME = 'config.yml'
 class Config:
   def __init__(self, path: str = None):
       self.path = path or os.path.join(os.getcwd(), FILE_NAME)
-      self.load()
 
       # If the config does not exist, use template
       if not os.path.exists(self.path):
           self._create_default_file()
+
+      self.load()
 
   @property
   def base_teams_csv_path(self):
@@ -82,12 +83,12 @@ class Config:
   def _create_default_file(self):
     with open(self.path, 'w') as fp:
       config = {
-        'gapi_credentials': self.gapi_credentials,
-        'base_teams_csv_path': self.base_teams_csv_path,
-        'bosses_csv_path': self.bosses_csv_path,
-        'player_availabilities_csv_path': self.player_availabilities_csv_path,
-        'player_experiences_csv_path': self.player_experiences_csv_path,
-        'player_interets_csv_path': self.player_interests_csv_path,
-        'players_csv_path': self.players_csv_path,
+        'gapi_credentials': '',
+        'base_teams_csv_path': '',
+        'bosses_csv_path': '',
+        'player_availabilities_csv_path': '',
+        'player_experiences_csv_path': '',
+        'player_interets_csv_path': '',
+        'players_csv_path': '',
       }
       fp.write(yaml.safe_dump(config))

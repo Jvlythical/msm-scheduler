@@ -76,13 +76,8 @@ class Player:
         return self._interests
 
     @interests.setter
-    def interests(self, value):
-        interests = []
-        for boss_name in value:
-            experience = self.experience[boss_name]
-            if experience >= MIN_EXPERIENCE and experience <= MAX_EXPERIENCE:
-                interests.append(boss_name)
-        self._interests = interests
+    def interests(self, value: dict):
+        self._interests = list(value.keys())
 
     @property
     def experience(self):
