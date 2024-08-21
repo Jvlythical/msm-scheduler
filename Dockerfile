@@ -8,4 +8,3 @@ USER msm_scheduler
 WORKDIR /home/msm_scheduler
 
 ENTRYPOINT ["python3", "-m",  "msm_scheduler.serve"]
-EXPOSE 8080

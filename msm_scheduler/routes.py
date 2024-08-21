@@ -5,14 +5,15 @@ def get_schedule(context: SimpleHTTPRequestHandler):
   teams = schedule()
   lines = []
   for team in teams:
-    lines.append(f"{team.boss_name} team at {team.time}")
-    lines.append(f"Filled {len(team.players)}/{team.boss.capacity}")
+    lines.append(f"=== {team.boss_name} team at {team.time}")
+    lines.append(f"~ Filled {len(team.players)}/{team.boss.capacity}")
     for player in team.players:
         lines.append(f"{player.name}")
-    lines.append(f"Clear probability: {team.clear_probability()}")
+    lines.append(f"~ Clear probability: {team.clear_probability()}")
+    lines.append("")
 
   context.render(
-    plain = "<br />".join(lines),
+    plain = "\n".join(lines),
     status = 200
   )
 
