@@ -9,7 +9,6 @@ def get_schedule(context: SimpleHTTPRequestHandler):
     lines.append(f"~ Filled {len(team.players)}/{team.boss.capacity}")
     for player in team.players:
         lines.append(f"{player.name}")
-    lines.append(f"~ Clear probability: {team.clear_probability()}")
     lines.append("")
 
   context.render(
