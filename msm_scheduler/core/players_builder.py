@@ -1,9 +1,11 @@
 import pdb
 from typing import List
 
-from ..types import PlayerAvailability, PlayerExperience, PlayerInterest, PlayerStats
+from ..lib.logger import bcolors, Logger
 from ..models import Player
+from ..types import PlayerAvailability, PlayerExperience, PlayerInterest, PlayerStats
 
+LOG_ID = 'PlayersBuilder'
 
 class PlayersBuilder():
     def __init__(self):
@@ -73,12 +75,26 @@ class PlayersBuilder():
 
         players = []
         for stat in self.stats:
+            availability = availabilities_index[stat['identity']]
+            experience = experiences_index.get(stat['name'])
+            interests = interests_index.get(stat['name'])
+
             player = Player(
                 **stat,
-                availability=availabilities_index[stat['identity']],
-                experience=experiences_index.get(stat['name']) or {},
-                interests=interests_index.get(stat['name']) or {}
+                availability=availability,
+                experience=experience or {},
+                interests=interests or {}
             )
+
+            if len(availability) == 0:
+                Logger.instance(LOG_ID).warn(f"{bcolors.WARNING}{player.name} has no availability{bcolors.ENDC}")
+
+            if not experience:
+                Logger.instance(LOG_ID).warn(f"{bcolors.WARNING}Could not join {player.name} experience{bcolors.ENDC}")
+
+            if not interests:
+                Logger.instance(LOG_ID).warn(f"{bcolors.WARNING}Could not join {player.name} interests{bcolors.ENDC}")
+
             players.append(player)
 
         return players
