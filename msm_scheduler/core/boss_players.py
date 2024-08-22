@@ -27,7 +27,7 @@ class BossPlayers():
             for boss_name in player.interests:
                 boss_stack = self.get(boss_name)
                 boss: Boss = self.bosses_index[boss_name]
-                if player.hp >= boss.hp_required and player.arcane_power >= boss.arcane_power_required:
+                if player.boss_ready(boss):
                     boss_stack.append(player)
 
         bem = BossEffectivenessModel()

@@ -114,6 +114,9 @@ class Player:
 
         return max_damage_cap / boss_total_max_damage_cap_required * boss_experience * 525 / boss_difficulty
 
+    def boss_ready(self, boss: Boss):
+        return self.hp >= boss.hp_required and self.arcane_power >= boss.arcane_power_required
+
     def remove_availability(self, time: str):
         if time not in self.availability:
             return

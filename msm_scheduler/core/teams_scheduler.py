@@ -75,6 +75,9 @@ class TeamsScheduler():
 
     def assign_player_interests(self, player: Player):
         for boss_name in player.interests:
+            boss = self.bosses_index[boss_name]
+            if not player.boss_ready(boss):
+                continue
             teams = self.player_boss_teams(player, boss_name)
             self.assign_player(player, teams)
 
