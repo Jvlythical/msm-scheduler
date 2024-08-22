@@ -3,6 +3,8 @@ import os
 
 from ..config import Config
 
+from ..transformers.csv_to_base_teams import CSVToBaseTeamsTransformer
+from ..transformers.csv_to_bosses import CSVToBossesTransformer
 from ..transformers.csv_to_players import CSVToPlayersTransformer
 from ..transformers.csv_to_player_availabilities import CSVToPlayerAvailabilitiesTransformer
 from ..transformers.csv_to_player_interests import CSVToPlayerInterestsTransformer
@@ -12,6 +14,24 @@ class FileImporter():
 
   def __init__(self, config: Config):
     self.config = config
+
+  @property
+  def base_teams(self):
+    if not os.path.exists(self.config.base_teams_csv_path):
+      return []
+    
+    with open(self.config.base_teams_csv_path, mode='r') as file:
+      rows = csv.DictReader(file)
+      return CSVToBaseTeamsTransformer(rows).tranform()
+
+  @property
+  def bosses(self):
+    if not os.path.exists(self.config.bosses_csv_path):
+      return []
+    
+    with open(self.config.bosses_csv_path, mode='r') as file:
+      rows = csv.DictReader(file)
+      return CSVToBossesTransformer(rows).tranform()
 
   @property
   def player_availabilities(self):
@@ -50,4 +70,6 @@ class FileImporter():
       return CSVToPlayersTransformer(rows).tranform()
 
   def get(self):
-    return [self.player_stats, self.player_experiences, self.player_interests, self.player_availabilities]
+    return [
+      self.player_stats, self.player_experiences, self.player_interests, self.player_availabilities, self.bosses, self.base_teams
+    ]

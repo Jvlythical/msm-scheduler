@@ -69,6 +69,14 @@ class Config:
   def players_csv_path(self, v: str):
     self._players_csv_path = v
 
+  @property
+  def settings_spreadsheet_id(self):
+    return self._settings_spreadsheet_id
+
+  @settings_spreadsheet_id.setter
+  def settings_spreadsheet_id(self, v: str):
+    self._settings_spreadsheet_id = v
+
   def load(self):
     with open(self.path, 'r') as fp:
       config = yaml.safe_load(fp) or {}
@@ -79,6 +87,7 @@ class Config:
       self.player_experiences_csv_path = config.get('player_experiences_csv_path') or ''
       self.player_interests_csv_path = config.get('player_interests_csv_path') or ''
       self.players_csv_path = config.get('players_csv_path') or ''
+      self.settings_spreadsheet_id = config.get('settings_spreadsheet_id') or ''
 
   def _create_default_file(self):
     with open(self.path, 'w') as fp:
@@ -90,5 +99,6 @@ class Config:
         'player_experiences_csv_path': '',
         'player_interets_csv_path': '',
         'players_csv_path': '',
+        'settings_spreadsheet_id': '',
       }
       fp.write(yaml.safe_dump(config))

@@ -11,9 +11,6 @@ class CSVToBossesTransformer():
         bosses = []
 
         for row in self.rows:
-            # assume 1m MDC translates to 1.5b DPM
-            row['Total Max Damage Cap Required'] = int(
-                row['Boss HP']) / 10 / 1.5
             boss_params = BossParams(
                 arcane_power_required=int(row['Arcane Power Required']) if row['Arcane Power Required'] else 0,
                 capacity=int(row['Capacity']) if row['Capacity'] else 0,
@@ -22,6 +19,7 @@ class CSVToBossesTransformer():
                 name=row['Name'],
                 total_max_damage_cap_required=int(row['Total Max Damage Cap Required']) if row['Total Max Damage Cap Required'] else 1
             )
-            bosses.append(Boss(**boss_params))
+            bosses.append(boss_params)
 
         return bosses
+

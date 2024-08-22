@@ -1,3 +1,5 @@
+import pdb
+
 from .config import Config
 from .importers.file import FileImporter
 from .importers.google_spreadsheet import GoogleSpreadSheetImporter
@@ -31,6 +33,26 @@ class Database():
 
         if tables[3]:
             self.player_availabilities = tables[3]
+
+        if len(tables) > 4:
+            self.bosses = tables[4]
+            self.base_teams = tables[5]
+
+    @property
+    def base_teams(self):
+        return self._base_teams
+
+    @base_teams.setter
+    def base_teams(self, v):
+        self._base_teams = v
+
+    @property
+    def bosses(self):
+        return self._bosses
+
+    @bosses.setter
+    def bosses(self, v):
+        self._bosses = v
 
     @property
     def player_availabilities(self):

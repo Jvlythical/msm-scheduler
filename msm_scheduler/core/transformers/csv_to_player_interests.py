@@ -9,12 +9,12 @@ class CSVToPlayerInterestsTransformer():
     experiences = []
     for row in self.rows:
       experience = {
-        HARD_DAMIEN: self.is_interested(row.get('Hard Damien') or row.get('Hard Damien_interest')),
-        LOTUS: self.is_interested(row.get('Lotus') or row.get('Lotus_interest')),
-        LUCID: self.is_interested(row.get('Lucid') or row.get('Lucid_interest')),
+        HARD_DAMIEN: self.is_interested(row.get('Hard Damien') or row.get('Hard Damien')),
+        LOTUS: self.is_interested(row.get('Lotus') or row.get('Lotus')),
+        LUCID: self.is_interested(row.get('Lucid') or row.get('Lucid')),
         'name': row['Name'],
-        NORMAL_DAMIEN: self.is_interested(row.get('Normal Damien') or row.get('Normal Damien_interest')),
-        WILL: self.is_interested(row.get('Will') or row.get('Will_interest'))
+        NORMAL_DAMIEN: self.is_interested(row.get('Normal Damien') or row.get('Normal Damien')),
+        WILL: self.is_interested(row.get('Will') or row.get('Will'))
       }
 
       experiences.append(experience)

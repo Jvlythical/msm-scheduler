@@ -1,5 +1,6 @@
 import pdb
 
+from .constants.gapi import SPREADSHEET_COLUMNS
 from .core.boss_players import BossPlayers
 from .core.config import Config
 from .core.database import Database
@@ -20,10 +21,11 @@ def schedule():
     database.load_from_google_spreadsheet(GoogleSpreadSheetImporter())
     database.load_from_file(FileImporter(config))
 
-    bosses = list(map(lambda row: Boss(**row),
-                  import_bosses_from_csv(config.bosses_csv_path)))
-    base_teams = list(map(lambda row: Team(**row),
-                      import_base_teams_from_csv(config.base_teams_csv_path)))
+    # Settings
+    importer = GoogleSpreadSheetImporter(config.settings_spreadsheet_id, SPREADSHEET_COLUMNS)
+    tables = importer.get()
+    bosses = list(map(lambda row: Boss(**row), tables[4]))
+    base_teams = list(map(lambda row: Team(**row), tables[5]))
 
     builder = PlayersBuilder()
     builder.with_availabilities(database.player_availabilities)

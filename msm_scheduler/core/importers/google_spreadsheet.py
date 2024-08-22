@@ -11,20 +11,22 @@ from googleapiclient.errors import HttpError
 
 from .file import FileImporter
 from ..config import Config
-from ...constants.gapi import CREDENTIALS_FILE_NAME, SCOPES, TOKEN_FILE_NAME
+from ...constants.gapi import (
+    CREDENTIALS_FILE_NAME, PLAYER_EXPERIENCES, PLAYERS_SPREADSHEET, PLAYER_AVAILABILITY, PLAYER_INTERESTS, SCOPES, TOKEN_FILE_NAME
+)
 
 SHEET_ID = "1B0Yq3AJXZNYVdVV0BpAFWIfRCxL17VsMrnmMxmXePmA"
-
+SPREADSHEET_COLUMNS = [
+    PLAYERS_SPREADSHEET,
+    PLAYER_EXPERIENCES,
+    PLAYER_INTERESTS,
+    PLAYER_AVAILABILITY
+]
 
 class GoogleSpreadSheetImporter():
 
-    def __init__(self, sheet_id: str = SHEET_ID):
-        self.google_spreadsheet_columns = [
-            'Players!A1:F',
-            'Player Experiences!A1:F',
-            'Player Interests!A1:F',
-            'Player Availability!A1:H'
-        ]
+    def __init__(self, sheet_id: str = SHEET_ID, columns = SPREADSHEET_COLUMNS):
+        self.columns = columns
         self.sheet_id = sheet_id
 
     @property
@@ -50,9 +52,8 @@ class GoogleSpreadSheetImporter():
 
         return creds
 
-    def get(self, columns=None):
+    def get(self):
         config = Config()
-        columns = columns or self.google_spreadsheet_columns
 
         try:
             service = build("sheets", "v4", credentials=self.gapi_credentials)
@@ -60,13 +61,11 @@ class GoogleSpreadSheetImporter():
             # Import data
             sheet = service.spreadsheets()
 
-            if len(columns) == 1:
-                return self._get_google_spreadsheet_range(sheet, columns[0])
-
-            data_frames = [self._get_google_spreadsheet_range(sheet, col) for col in columns]
+            data_frames = [self._get_google_spreadsheet_range(sheet, col) for col in self.columns]
         except HttpError as err:
+            pdb.set_trace()
             print(err)
-            return [[], [], [], []]
+            return [[], [], [], [], [], []]
 
         df = pd.DataFrame(data_frames[0])
         with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
@@ -88,13 +87,21 @@ class GoogleSpreadSheetImporter():
             config.player_availabilities_csv_path = tmp.name
             tmp.write(df.to_csv())
 
+        if len(data_frames) > 4:
+            df = pd.DataFrame(data_frames[4])
+            with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
+                config.bosses_csv_path = tmp.name
+                tmp.write(df.to_csv())
+
+            df = pd.DataFrame(data_frames[5])
+            with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
+                config.base_teams_csv_path = tmp.name
+                tmp.write(df.to_csv())
+
         return FileImporter(config).get()
 
     def _get_google_spreadsheet_range(self, sheet, sheet_range):
         result = sheet.values().get(spreadsheetId=self.sheet_id, range=sheet_range).execute()
         values = result.get("values", [])
 
-        # Add suffix to column names indicating Player Interests (except the 'Name' column)
-        if 'Interests' in sheet_range:
-            values[0][1:] = [x + '_interest' for x in values[0][1:]]
         return pd.DataFrame(values[1:], columns=values[0])
