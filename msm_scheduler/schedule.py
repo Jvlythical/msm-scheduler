@@ -6,8 +6,6 @@ from .core.config import Config
 from .core.database import Database
 from .core.importers.file import FileImporter
 from .core.importers.google_spreadsheet import GoogleSpreadSheetImporter
-from .core.import_base_teams import import_base_teams_from_csv
-from .core.import_bosses import import_bosses_from_csv
 from .core.players_builder import PlayersBuilder
 from .core.teams_scheduler import TeamsScheduler
 from .lib.logger import bcolors, Logger
@@ -18,7 +16,7 @@ LOG_ID = 'Schedule'
 def schedule():
     config = Config()
     database = Database(config)
-    database.load_from_google_spreadsheet(GoogleSpreadSheetImporter())
+    database.load_from_google_spreadsheet(GoogleSpreadSheetImporter(config.inputs_spreadsheet_id))
     database.load_from_file(FileImporter(config))
 
     # Settings

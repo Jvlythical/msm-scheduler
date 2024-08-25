@@ -15,7 +15,7 @@ LOG_ID = 'Availability'
 def build_boss_players():
   config = Config()
   database = Database(config)
-  database.load_from_google_spreadsheet(GoogleSpreadSheetImporter())
+  database.load_from_google_spreadsheet(GoogleSpreadSheetImporter(config.inputs_spreadsheet_id))
   database.load_from_file(FileImporter(config))
 
     # Settings

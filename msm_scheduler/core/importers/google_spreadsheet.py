@@ -15,7 +15,6 @@ from ...constants.gapi import (
     CREDENTIALS_FILE_NAME, TOKEN_ENV, PLAYER_EXPERIENCES, PLAYERS_SPREADSHEET, PLAYER_AVAILABILITY, PLAYER_INTERESTS, SCOPES, TOKEN_FILE_NAME
 )
 
-SHEET_ID = "1B0Yq3AJXZNYVdVV0BpAFWIfRCxL17VsMrnmMxmXePmA"
 SPREADSHEET_COLUMNS = [
     PLAYERS_SPREADSHEET,
     PLAYER_EXPERIENCES,
@@ -25,7 +24,7 @@ SPREADSHEET_COLUMNS = [
 
 class GoogleSpreadSheetImporter():
 
-    def __init__(self, sheet_id: str = SHEET_ID, columns = SPREADSHEET_COLUMNS):
+    def __init__(self, sheet_id: str, columns = SPREADSHEET_COLUMNS):
         self.columns = columns
         self.sheet_id = sheet_id
 

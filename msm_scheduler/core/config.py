@@ -1,7 +1,7 @@
 import os
 import yaml
 
-from ..constants.config import FILE_NAME, SPREADSHEET_ID_ENV
+from ..constants.config import FILE_NAME, INPUTS_SPREADSHEET_ID_ENV, SETTINGS_SPREADSHEET_ID_ENV
 
 class Config:
   def __init__(self, path: str = None):
@@ -30,12 +30,20 @@ class Config:
     self._bosses_csv_path = v
 
   @property
-  def gapi_credentials(self):
-    return self._gapi_credentials
+  def token_json(self):
+    return self._token_json
 
-  @gapi_credentials.setter
-  def gapi_credentials(self, v: str):
-    self._gapi_credentials = v
+  @token_json.setter
+  def token_json(self, v: str):
+    self._token_json = v
+
+  @property
+  def inputs_spreadsheet_id(self):
+    return self._inputs_spreadsheet_id
+
+  @inputs_spreadsheet_id.setter
+  def inputs_spreadsheet_id(self, v: str):
+    self._inputs_spreadsheet_id = v
 
   @property
   def player_availabilities_csv_path(self):
@@ -82,19 +90,21 @@ class Config:
       config = yaml.safe_load(fp) or {}
       self.base_teams_csv_path = config.get('base_teams_csv_path') or ''
       self.bosses_csv_path = config.get('bosses_csv_path') or ''
-      self.gapi_credentials = config.get('gapi_credentials') or ''
+      self.token_json = config.get('token_json') or ''
+      self.inputs_spreadsheet_id = os.environ.get(INPUTS_SPREADSHEET_ID_ENV) or config.get('inputs_spreadsheet_id') or ''
       self.player_availabilities_csv_path = config.get('player_availabilities_csv_path') or ''
       self.player_experiences_csv_path = config.get('player_experiences_csv_path') or ''
       self.player_interests_csv_path = config.get('player_interests_csv_path') or ''
       self.players_csv_path = config.get('players_csv_path') or ''
-      self.settings_spreadsheet_id = os.environ.get(SPREADSHEET_ID_ENV) or config.get('settings_spreadsheet_id') or ''
+      self.settings_spreadsheet_id = os.environ.get(SETTINGS_SPREADSHEET_ID_ENV) or config.get('settings_spreadsheet_id') or ''
 
   def _create_default_file(self):
     with open(self.path, 'w') as fp:
       config = {
-        'gapi_credentials': '',
+        'token_json': '',
         'base_teams_csv_path': '',
         'bosses_csv_path': '',
+        'inputs_spreadsheet_id': '',
         'player_availabilities_csv_path': '',
         'player_experiences_csv_path': '',
         'player_interets_csv_path': '',
