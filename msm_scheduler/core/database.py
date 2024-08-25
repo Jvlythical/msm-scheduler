@@ -127,7 +127,7 @@ class Database():
         i = 0
         for row in table1:
             key = get_key(row) if callable(get_key) else row[0]
-            row[key] = i
+            index[key] = i
             i += 1
 
         new_rows = []
