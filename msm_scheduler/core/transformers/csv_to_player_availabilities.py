@@ -13,8 +13,10 @@ class CSVToPlayerAvailabilitiesTransformer():
     for row in self.rows:
       availabilities.append({
         'friday': self._to_availabilities(row['Friday'] or ''),
-        'identity': row['Identity'],
+        'identity': (row['Identity'] or '').strip(),
         'monday': self._to_availabilities(row['Monday'] or ''),
+        'saturday': self._to_availabilities(row['Saturday'] or ''),
+        'sunday': self._to_availabilities(row['Sunday'] or ''),
         'thursday': self._to_availabilities(row['Thursday'] or ''),
         'tuesday': self._to_availabilities(row['Tuesday'] or ''),
         'wednesday': self._to_availabilities(row['Wednesday'] or '')
@@ -24,8 +26,11 @@ class CSVToPlayerAvailabilitiesTransformer():
   def _to_availabilities(self, cell: str):
     availabilities = []
     for availability in cell.split(DELIMITTER):
-      availabilities += self._replace_n_plus(availability).split(DELIMITTER)
-    return availabilities
+      if availability == None:
+        continue
+      availabilities += self._replace_n_plus(availability.strip()).split(DELIMITTER)
+
+    return list(filter(lambda time: not not time, availabilities))
 
   def _replace_n_plus_func(self, match):
       # Extract the number before the "+" symbol
@@ -38,6 +43,4 @@ class CSVToPlayerAvailabilitiesTransformer():
       # Function changes n+ to n,n+1,...,23
       if isinstance(s, int):
           return str(s)
-      if s is None:
-          return ""
       return re.sub(r"(\d+)\+", self._replace_n_plus_func, s)

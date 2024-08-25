@@ -24,8 +24,7 @@ def schedule():
     # Settings
     importer = GoogleSpreadSheetImporter(config.settings_spreadsheet_id, SPREADSHEET_COLUMNS)
     tables = importer.get()
-    bosses = list(map(lambda row: Boss(**row), tables[4]))
-    base_teams = list(map(lambda row: Team(**row), tables[5]))
+    database.right_merge_tables(tables)
 
     builder = PlayersBuilder()
     builder.with_availabilities(database.player_availabilities)
@@ -34,9 +33,12 @@ def schedule():
     builder.with_stats(database.player_stats)
     players = builder.build()
 
+    bosses = list(map(lambda row: Boss(**row), database.bosses))
+    base_teams = list(map(lambda row: Team(**row), database.base_teams))
     boss_players = BossPlayers(players=players, bosses=bosses)
     scheduler = TeamsScheduler(boss_players, base_teams)
     scheduler.assign()
+
     return base_teams
 
 if __name__ == '__main__':

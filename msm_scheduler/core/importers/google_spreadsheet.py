@@ -12,7 +12,7 @@ from googleapiclient.errors import HttpError
 from .file import FileImporter
 from ..config import Config
 from ...constants.gapi import (
-    CREDENTIALS_FILE_NAME, PLAYER_EXPERIENCES, PLAYERS_SPREADSHEET, PLAYER_AVAILABILITY, PLAYER_INTERESTS, SCOPES, TOKEN_FILE_NAME
+    CREDENTIALS_FILE_NAME, TOKEN_ENV, PLAYER_EXPERIENCES, PLAYERS_SPREADSHEET, PLAYER_AVAILABILITY, PLAYER_INTERESTS, SCOPES, TOKEN_FILE_NAME
 )
 
 SHEET_ID = "1B0Yq3AJXZNYVdVV0BpAFWIfRCxL17VsMrnmMxmXePmA"
@@ -28,6 +28,11 @@ class GoogleSpreadSheetImporter():
     def __init__(self, sheet_id: str = SHEET_ID, columns = SPREADSHEET_COLUMNS):
         self.columns = columns
         self.sheet_id = sheet_id
+
+        # If token is set as an environment variable, write it to a file
+        if os.environ.get(TOKEN_ENV):
+            with open(TOKEN_FILE_NAME, 'w') as fp:
+                fp.write(os.environ[TOKEN_ENV])
 
     @property
     def gapi_credentials(self):
@@ -63,7 +68,6 @@ class GoogleSpreadSheetImporter():
 
             data_frames = [self._get_google_spreadsheet_range(sheet, col) for col in self.columns]
         except HttpError as err:
-            pdb.set_trace()
             print(err)
             return [[], [], [], [], [], []]
 

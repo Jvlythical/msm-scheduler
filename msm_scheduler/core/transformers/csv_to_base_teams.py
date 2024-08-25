@@ -9,7 +9,7 @@ class CSVToBaseTeamsTransformer():
       base_teams = []
 
       for row in self.rows:
-        boss_name = row['Boss Name']
+        boss_name = (row['Boss Name'] or '').strip()
         player_names = list(map(lambda data: data.strip(), row['Player Names'].split(PLAYER_NAMES_DELIMITTER)))
         time = row['Time'].lower()
 

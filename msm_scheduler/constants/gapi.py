@@ -1,5 +1,6 @@
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 CREDENTIALS_FILE_NAME = 'credentials.json'
+TOKEN_ENV = 'MSM_SCHEDULER_TOKEN_JSON'
 TOKEN_FILE_NAME = 'token.json'
 
 BASE_TEAMS = 'Base Teams!A1:C'

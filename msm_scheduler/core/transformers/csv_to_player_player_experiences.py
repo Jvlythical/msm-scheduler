@@ -12,7 +12,7 @@ class CSVToPlayerExperiencesTransformer():
         HARD_DAMIEN: int(row['Hard Damien']) if row['Hard Damien'] else 0,
         LOTUS: int(row['Lotus']) if row['Lotus'] else 0,
         LUCID: int(row['Lucid']) if row['Lucid'] else 0,
-        'name': row['Name'],
+        'name': (row['Name'] or '').strip(),
         NORMAL_DAMIEN: int(row['Normal Damien']) if row['Normal Damien'] else 0,
         WILL: int(row['Will']) if row['Will'] else 0
       }

@@ -16,7 +16,7 @@ class CSVToBossesTransformer():
                 capacity=int(row['Capacity']) if row['Capacity'] else 0,
                 difficulty=int(row['Difficulty']) if row['Difficulty'] else 0,
                 hp_required=int(row['HP Required']) if row['HP Required'] else 0,
-                name=row['Name'],
+                name=(row['Name'] or '').strip(),
                 total_max_damage_cap_required=int(row['Total Max Damage Cap Required']) if row['Total Max Damage Cap Required'] else 1
             )
             bosses.append(boss_params)

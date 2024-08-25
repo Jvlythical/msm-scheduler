@@ -44,10 +44,6 @@ class PlayersBuilder():
             for day in availability:
                 hours = availability[day]
 
-                # Should find out why empty string is set
-                if hours == ['']:
-                    continue
-
                 availabilities_index[identity] += list(map(lambda hour: f"{day.strip()}.{hour.strip()}", hours))
         
         return availabilities_index

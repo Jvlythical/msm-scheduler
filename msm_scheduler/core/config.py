@@ -1,7 +1,7 @@
 import os
 import yaml
 
-FILE_NAME = 'config.yml'
+from ..constants.config import FILE_NAME, SPREADSHEET_ID_ENV
 
 class Config:
   def __init__(self, path: str = None):
@@ -87,7 +87,7 @@ class Config:
       self.player_experiences_csv_path = config.get('player_experiences_csv_path') or ''
       self.player_interests_csv_path = config.get('player_interests_csv_path') or ''
       self.players_csv_path = config.get('players_csv_path') or ''
-      self.settings_spreadsheet_id = config.get('settings_spreadsheet_id') or ''
+      self.settings_spreadsheet_id = os.environ.get(SPREADSHEET_ID_ENV) or config.get('settings_spreadsheet_id') or ''
 
   def _create_default_file(self):
     with open(self.path, 'w') as fp:
