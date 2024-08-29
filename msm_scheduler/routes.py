@@ -3,7 +3,14 @@ from .availability import build_boss_players
 from .schedule import schedule
 
 def get_availability(context: SimpleHTTPRequestHandler):
-  boss_players = build_boss_players()
+  try:
+    boss_players = build_boss_players()
+  except Exception as e:
+    return context.render(
+      plain = str(e),
+      status = 500
+    )
+
   availability_distribution = boss_players.availability_distribution()
 
   lines = []
@@ -25,7 +32,14 @@ def get_availability(context: SimpleHTTPRequestHandler):
   )
 
 def get_schedule(context: SimpleHTTPRequestHandler):
-  teams = schedule()
+  try:
+    teams = schedule()
+  except Exception as e:
+    return context.render(
+      plain = str(e),
+      status = 500
+    )
+  
   lines = []
   for team in teams:
     lines.append(f"=== {team.boss_name} team at {team.time}")
