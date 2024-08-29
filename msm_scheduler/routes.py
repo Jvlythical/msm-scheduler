@@ -7,12 +7,12 @@ def get_availability(context: SimpleHTTPRequestHandler):
     boss_players = build_boss_players()
   except RuntimeError as e:
     return context.render(
-      plain = str(e),
+      plain = __to_html(str(e)),
       status = 400
     )
   except Exception as e:
     return context.render(
-      plain = str(e),
+      plain = __to_html(str(e)),
       status = 500
     )
 
@@ -41,12 +41,12 @@ def get_schedule(context: SimpleHTTPRequestHandler):
     teams = schedule()
   except RuntimeError as e:
     return context.render(
-      plain = str(e),
+      plain = __to_html(str(e)),
       status = 400
     )
   except Exception as e:
     return context.render(
-      plain = str(e),
+      plain = __to_html(str(e)),
       status = 500
     )
   
