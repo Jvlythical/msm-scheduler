@@ -15,8 +15,8 @@ class Team:
         self.time = kwargs.get('time')
         self.boss = None
         self.boss_name = kwargs.get('boss_name')
+        self.players = [] # This has to be set first otherwise self.player_names will be cleared
         self.player_names = kwargs.get('player_names', [])
-        self.players = []
         self.tcpm = TeamClearProbabilityModel()
         # self.tcpm.fit()
 
@@ -70,6 +70,11 @@ class Team:
     @players.setter
     def players(self, value: List[Player]):
         self._players = value
+        self._player_names = list(map(lambda player: player.name, value))
+
+        for player in value:
+            player.remove_availability(self.time)
+            player.remove_interest(self.boss_name)
 
     def add_player(self, player: Player):
         if self.size >= self.boss.capacity:

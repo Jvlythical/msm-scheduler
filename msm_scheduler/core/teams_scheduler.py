@@ -14,8 +14,9 @@ class TeamsScheduler():
         self.boss_players = boss_players
         self.base_teams = base_teams
         self.fills = []
-        self.__join_base_team_resources(base_teams)
 
+        self.__join_base_team_resources(base_teams)
+        
         self.boss_teams_index = {}
         for team in self.base_teams:
             if team.boss_name not in self.boss_teams_index:
@@ -25,7 +26,8 @@ class TeamsScheduler():
         self.player_teams_index = {}
         for player in self.players:
             self.player_teams_index[player.name] = []
-        self.__initialize_base_teams()
+
+        self.__assign_base_team_interests()
 
     @property
     def base_teams(self) -> List[Team]:
@@ -150,13 +152,7 @@ class TeamsScheduler():
 
         return teams
 
-    def __initialize_base_teams(self):
-        # Since the player is already part of a base team,
-        # they are no longer interested in running that boss
-        for team in self.base_teams:
-            for player in team.players:
-                player.remove_interest(team.boss_name)
-
+    def __assign_base_team_interests(self):
         # For the base team player's remaining interests, assign them a team
         for team in self.base_teams:
             for player in team.players:

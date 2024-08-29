@@ -119,7 +119,8 @@ class Player:
 
     def remove_availability(self, time: str):
         if time not in self.availability:
-            return
+            availabilities = "\n".join(self.availability)
+            raise RuntimeError(f"=== {self.name} is not available at {time}\n~ Availabilities\n{availabilities}")
 
         self.availability_count[time] += 1
 
@@ -128,6 +129,10 @@ class Player:
             self.availability.remove(time)
 
     def remove_interest(self, boss_name: str):
+        if boss_name not in self.interests:
+            interests = "\n".join(self.interests)
+            raise RuntimeError(f"=== {self.name} is not interested in {boss_name}\n~ Interests\n{interests}")
+
         # A boss can have one or more variants e.g. normal damien and hard damien
         for variants in BOSS_VARIANTS_TABLE:
             if boss_name not in variants:

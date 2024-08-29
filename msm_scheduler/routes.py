@@ -5,6 +5,11 @@ from .schedule import schedule
 def get_availability(context: SimpleHTTPRequestHandler):
   try:
     boss_players = build_boss_players()
+  except RuntimeError as e:
+    return context.render(
+      plain = str(e),
+      status = 400
+    )
   except Exception as e:
     return context.render(
       plain = str(e),
@@ -34,6 +39,11 @@ def get_availability(context: SimpleHTTPRequestHandler):
 def get_schedule(context: SimpleHTTPRequestHandler):
   try:
     teams = schedule()
+  except RuntimeError as e:
+    return context.render(
+      plain = str(e),
+      status = 400
+    )
   except Exception as e:
     return context.render(
       plain = str(e),
