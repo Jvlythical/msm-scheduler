@@ -117,10 +117,11 @@ class TeamsScheduler():
                 # Continue while teams are not filled
                 if filled:
                     break
-            
-            Logger.instance(LOG_ID).warn(f"{bcolors.WARNING}Could not assign the following players{bcolors.ENDC}")
-            for player in not_assigned:
-                print(f"{player.name}")
+                
+            if len(not_assigned) > 0:
+                Logger.instance(LOG_ID).warn(f"{bcolors.WARNING}Could not assign the following players{bcolors.ENDC}")
+                for player in not_assigned:
+                    print(f"{player.name}")
 
     def boss_teams(self, boss_name: str):
         teams: List[Team] = self.boss_teams_index.get(boss_name)

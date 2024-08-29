@@ -128,9 +128,6 @@ class Player:
             self.availability.remove(time)
 
     def remove_interest(self, boss_name: str):
-        if boss_name not in self.interests:
-            return
-
         # A boss can have one or more variants e.g. normal damien and hard damien
         for variants in BOSS_VARIANTS_TABLE:
             if boss_name not in variants:
