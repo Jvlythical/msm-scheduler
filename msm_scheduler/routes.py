@@ -54,9 +54,10 @@ def get_schedule(context: SimpleHTTPRequestHandler):
   for _schedule in schedules:
     teams = _schedule.teams
 
+    lines.append(f"=== {team.boss_name} schedules")
+    lines.append("")
+
     for team in teams:
-      lines.append(f"=== {team.boss_name} schedules")
-      lines.append("")
       lines.append(f"~ {team.time} filled {len(team.players)}/{team.boss.capacity}")
 
       for player in team.players:
