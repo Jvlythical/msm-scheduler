@@ -35,16 +35,37 @@ def schedule():
     base_teams = list(map(lambda row: Team(**row), database.base_teams))
     boss_players = BossPlayers(players=players, bosses=bosses)
     scheduler = TeamsScheduler(boss_players, base_teams)
-    scheduler.assign()
+    schedules = scheduler.assign()
 
-    return base_teams
+    return schedules
 
 if __name__ == '__main__':
-    teams = schedule()
+    schedules = schedule()
 
-    for team in teams:
-        Logger.instance(LOG_ID).info(f"{bcolors.OKBLUE}{team.boss_name} team at {team.time}{bcolors.ENDC}")
-        Logger.instance(LOG_ID).info(f"{bcolors.OKCYAN}Filled {len(team.players)}/{team.boss.capacity}{bcolors.ENDC}")
-        for player in team.players:
-            print(f"{player.name}")
-        print(f"\nClear probability: {team.clear_probability()}")
+    for _schedule in schedules:
+        teams = _schedule.teams
+        Logger.instance(LOG_ID).info(f"{bcolors.OKBLUE}{_schedule.boss_name} schedules\n{bcolors.ENDC}")
+
+        for team in teams:
+            Logger.instance(LOG_ID).info(f"{bcolors.OKCYAN}{team.time} filled {len(team.players)}/{team.boss.capacity}{bcolors.ENDC}")
+
+            for player in team.players:
+                print(f"{player.name}")
+
+            if len(team.availability_conflicts) > 0:
+                Logger.instance(LOG_ID).warning(f"{bcolors.WARNING}Availability Conflicts{bcolors.ENDC}")
+                for player in team.availability_conflicts:
+                    print(f"{player.name}")
+
+            if len(team.interest_conflicts) > 0:
+                Logger.instance(LOG_ID).warning(f"{bcolors.WARNING}Interest Conflicts{bcolors.ENDC}")
+                for player in team.interest_conflicts:
+                    print(f"{player.name}")
+
+            print()
+
+        if len(_schedule.fills) > 0:
+            Logger.instance(LOG_ID).info(f"{bcolors.OKGREEN}Fills{bcolors.ENDC}")
+            for player in _schedule.fills:
+                print(f"{player.name}")
+            print()

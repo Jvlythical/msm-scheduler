@@ -1,10 +1,11 @@
 import pdb
 
-from typing import List
+from typing import Callable, Dict, List
 
 from ..lib.logger import bcolors, Logger
 from ..models import Boss, Player, Team
 from .boss_players import BossPlayers
+from .schedule import Schedule
 
 LOG_ID = 'TeamsScheduler'
 
@@ -17,13 +18,13 @@ class TeamsScheduler():
 
         self.__join_base_team_resources(base_teams)
         
-        self.boss_teams_index = {}
+        self.boss_schedules_index: Dict[str, Schedule] = {}
         for team in self.base_teams:
-            if team.boss_name not in self.boss_teams_index:
-                self.boss_teams_index[team.boss_name] = []
-            self.boss_teams_index[team.boss_name].append(team)
+            if team.boss_name not in self.boss_schedules_index:
+                self.boss_schedules_index[team.boss_name] = Schedule(team.boss_name, [])
+            self.boss_schedules_index[team.boss_name].add_team(team)
 
-        self.player_teams_index = {}
+        self.player_teams_index: Dict[str, Player] = {}
         for player in self.players:
             self.player_teams_index[player.name] = []
 
@@ -38,12 +39,12 @@ class TeamsScheduler():
         self._base_teams = value
 
     @property
-    def boss_teams_index(self):
-        return self._boss_teams_index
+    def boss_schedules_index(self):
+        return self._boss_schedules_index
 
-    @boss_teams_index.setter
-    def boss_teams_index(self, value: dict):
-        self._boss_teams_index = value
+    @boss_schedules_index.setter
+    def boss_schedules_index(self, value: dict):
+        self._boss_schedules_index = value
 
     @property
     def bosses(self):
@@ -80,7 +81,7 @@ class TeamsScheduler():
             boss = self.bosses_index[boss_name]
             if not player.boss_ready(boss):
                 continue
-            teams = self.player_boss_teams(player, boss_name)
+            teams = self.player_schedule_teams(player, boss_name)
             self.assign_player(player, teams)
 
     def assign(self):
@@ -91,11 +92,14 @@ class TeamsScheduler():
         bosses.sort(key=lambda boss: boss.total_max_damage_cap_required, reverse=True)
 
         for boss in bosses:
-            not_assigned = []
+            schedule = self.boss_schedules_index.get(boss.name)
+            if not schedule: 
+                continue
+
             Logger.instance(LOG_ID).info(f"{bcolors.OKBLUE}Assigning teams for {boss.name}{bcolors.ENDC}")
             Logger.instance(LOG_ID).info(boss)
             Logger.instance(LOG_ID).info(f"{bcolors.OKCYAN}Boss Available Teams{bcolors.ENDC}")
-            for team in self.boss_teams(boss.name):
+            for team in self.schedule_teams(boss.name):
                 Logger.instance(LOG_ID).info(team)
 
             while True:
@@ -104,11 +108,11 @@ class TeamsScheduler():
                 if not player:
                     break
 
-                teams: List[Team] = self.boss_teams(boss.name)
+                teams: List[Team] = self.schedule_teams(boss.name)
                 if self.assign_player(player, teams):
                     self.assign_player_interests(player)
                 else:
-                    not_assigned.append(player)
+                    schedule.add_fill(player)
 
                 filled = True
                 for team in teams:
@@ -119,36 +123,38 @@ class TeamsScheduler():
                 # Continue while teams are not filled
                 if filled:
                     break
-                
-            if len(not_assigned) > 0:
-                Logger.instance(LOG_ID).warn(f"{bcolors.WARNING}Could not assign the following players{bcolors.ENDC}")
-                for player in not_assigned:
-                    print(f"{player.name}")
+                    
+        # Add remaining players as fills for the boss
+        schedules = list(self.boss_schedules_index.values())
+        for schedule in schedules:
+            while True:
+                player = self.boss_players.next_player(schedule.boss_name)
+                if not player:
+                    break
+                schedule.add_fill(player)
 
-    def boss_teams(self, boss_name: str):
-        teams: List[Team] = self.boss_teams_index.get(boss_name)
+        return schedules
 
-        if not isinstance(teams, list):
+    def schedule_teams(self, boss_name: str):
+        schedule: Schedule = self.boss_schedules_index.get(boss_name)
+        if not schedule:
             return []
 
+        handler: Callable[[Team], None] = lambda team: team.clear_probability()
+
         # Sort team with lowest clear_propability first
-        teams.sort(key=lambda team: team.clear_probability())
+        return schedule.sorted_teams(handler)
 
-        # # TESTING
-        # teams.sort(key=lambda team: -len(team.player_names))
-
-        return teams
-
-    def player_boss_teams(self, player: Player, boss_name: str):
+    def player_schedule_teams(self, player: Player, boss_name: str):
         player_teams: List[Team] = self.player_teams_index[player.name]
         availability = list(map(lambda team: team.time_by_day, player_teams))
-        boss_teams: List[Team] = self.boss_teams(boss_name)
+        schedule_teams: List[Team] = self.schedule_teams(boss_name)
 
         # Find teams that are on the same days as when the player is already running
-        teams = list(filter(lambda team: team.time_by_day in availability, boss_teams))
+        teams = list(filter(lambda team: team.time_by_day in availability, schedule_teams))
 
         if len(teams) == 0:
-            return boss_teams
+            return schedule_teams
 
         return teams
 

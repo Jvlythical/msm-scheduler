@@ -38,7 +38,7 @@ def get_availability(context: SimpleHTTPRequestHandler):
 
 def get_schedule(context: SimpleHTTPRequestHandler):
   try:
-    teams = schedule()
+    schedules = schedule()
   except RuntimeError as e:
     return context.render(
       plain = __to_html(str(e)),
@@ -51,25 +51,36 @@ def get_schedule(context: SimpleHTTPRequestHandler):
     )
   
   lines = []
-  for team in teams:
-    lines.append(f"=== {team.boss_name} team at {team.time}")
-    lines.append(f"~ Filled {len(team.players)}/{team.boss.capacity}")
-    for player in team.players:
-        lines.append(f"{player.name}") 
+  for _schedule in schedules:
+    teams = _schedule.teams
 
-    if len(team.availability_conflicts) > 0:
+    for team in teams:
+      lines.append(f"=== {team.boss_name} schedules")
       lines.append("")
-      lines.append(f"~ Availability Conflicts")
-      for player in team.availability_conflicts:
-        lines.append(f"{player.name}")
+      lines.append(f"~ {team.time} filled {len(team.players)}/{team.boss.capacity}")
 
-    if len(team.interest_conflicts) > 0:
+      for player in team.players:
+          lines.append(f"{player.name}") 
+
+      if len(team.availability_conflicts) > 0:
+        lines.append("")
+        lines.append(f"~ Availability Conflicts")
+        for player in team.availability_conflicts:
+          lines.append(f"{player.name}")
+
+      if len(team.interest_conflicts) > 0:
+        lines.append("")
+        lines.append(f"~ Interest Conflicts")
+        for player in team.interest_conflicts:
+          lines.append(f"{player.name}")
+
       lines.append("")
-      lines.append(f"~ Interest Conflicts")
-      for player in team.interest_conflicts:
-        lines.append(f"{player.name}")
 
-    lines.append("")
+    if len(_schedule.fills) > 0:
+        lines.append(f"~ Fills")
+        for player in _schedule.fills:
+            lines.append(f"{player.name}")
+        lines.append("")
 
   context.render(
     plain = __to_html("\n".join(lines)),
