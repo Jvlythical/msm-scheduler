@@ -79,13 +79,11 @@ class Team:
                 player.remove_availability(self.time)
             except RuntimeError:
                 self.availability_conflicts.append(player)
-                player.remove_availability(self.time, True)
 
             try:
                 player.remove_interest(self.boss_name)
             except RuntimeError:
                 self.interest_conflicts.append(player)
-                player.remove_interest(self.boss_name, True)
 
     def add_player(self, player: Player):
         if self.size >= self.boss.capacity:

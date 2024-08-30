@@ -117,8 +117,8 @@ class Player:
     def boss_ready(self, boss: Boss):
         return self.hp >= boss.hp_required and self.arcane_power >= boss.arcane_power_required
 
-    def remove_availability(self, time: str, force=False):
-        if not force and time not in self.availability:
+    def remove_availability(self, time: str):
+        if time not in self.availability:
             availabilities = "\n".join(self.availability)
             raise RuntimeError(f"=== {self.name} is not available at {time}\n~ Availabilities\n{availabilities}")
 
@@ -128,8 +128,8 @@ class Player:
         if self.availability_count[time] >= AVAILABILITY_USAGES:
             self.availability.remove(time)
 
-    def remove_interest(self, boss_name: str, force=False):
-        if not force and boss_name not in self.interests:
+    def remove_interest(self, boss_name: str):
+        if boss_name not in self.interests:
             interests = "\n".join(self.interests)
             raise RuntimeError(f"=== {self.name} is not interested in {boss_name}\n~ Interests\n{interests}")
 
