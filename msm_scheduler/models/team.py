@@ -75,8 +75,17 @@ class Team:
         self._player_names = list(map(lambda player: player.name, value))
 
         for player in value:
-            player.remove_availability(self.time)
-            player.remove_interest(self.boss_name)
+            try:
+                player.remove_availability(self.time)
+            except RuntimeError:
+                self.availability_conflicts.append(player)
+                player.remove_availability(self.time, True)
+
+            try:
+                player.remove_interest(self.boss_name)
+            except RuntimeError:
+                self.interest_conflicts.append(player)
+                player.remove_interest(self.boss_name, True)
 
     def add_player(self, player: Player):
         if self.size >= self.boss.capacity:
@@ -85,17 +94,8 @@ class Team:
         self._players.append(player)
         self.player_names.append(player.name)
 
-        try:
-            player.remove_availability(self.time)
-        except RuntimeError:
-            self.availability_conflicts.append(player)
-            player.remove_availability(self.time, True)
-
-        try:
-            player.remove_interest(self.boss_name)
-        except RuntimeError:
-            self.interest_conflicts.append(player)
-            player.remove_interest(self.boss_name, True)
+        player.remove_availability(self.time)
+        player.remove_interest(self.boss_name)
 
         return True
 
