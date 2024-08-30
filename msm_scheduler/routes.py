@@ -55,7 +55,20 @@ def get_schedule(context: SimpleHTTPRequestHandler):
     lines.append(f"=== {team.boss_name} team at {team.time}")
     lines.append(f"~ Filled {len(team.players)}/{team.boss.capacity}")
     for player in team.players:
+        lines.append(f"{player.name}") 
+
+    if len(team.availability_conflicts) > 0:
+      lines.append("")
+      lines.append(f"~ Availability Conflicts")
+      for player in team.availability_conflicts:
         lines.append(f"{player.name}")
+
+    if len(team.interest_conflicts) > 0:
+      lines.append("")
+      lines.append(f"~ Interest Conflicts")
+      for player in team.interest_conflicts:
+        lines.append(f"{player.name}")
+
     lines.append("")
 
   context.render(

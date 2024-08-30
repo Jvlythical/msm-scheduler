@@ -4,18 +4,20 @@ import pdb
 from typing import List
 
 from ..constants.boss import VALID_BOSSES
+from ..core.team_clear_prbs import TeamClearProbabilityModel
 from ..types import TeamParams
 from .boss import Boss
 from .player import Player
-from ..core.team_clear_prbs import TeamClearProbabilityModel
-
 
 class Team:
     def __init__(self, **kwargs: TeamParams):
         self.time = kwargs.get('time')
+
+        self.availability_conflicts: List[Player] = []
         self.boss = None
         self.boss_name = kwargs.get('boss_name')
-        self.players = [] # This has to be set first otherwise self.player_names will be cleared
+        self.interest_conflicts: List[Player] = []
+        self.players: List[Player] = [] # This has to be set first otherwise self.player_names will be cleared
         self.player_names = kwargs.get('player_names', [])
         self.tcpm = TeamClearProbabilityModel()
         # self.tcpm.fit()
@@ -82,8 +84,18 @@ class Team:
 
         self._players.append(player)
         self.player_names.append(player.name)
-        player.remove_availability(self.time)
-        player.remove_interest(self.boss_name)
+
+        try:
+            player.remove_availability(self.time)
+        except RuntimeError:
+            self.availability_conflicts.append(player)
+            player.remove_availability(self.time, True)
+
+        try:
+            player.remove_interest(self.boss_name)
+        except RuntimeError:
+            self.interest_conflicts.append(player)
+            player.remove_interest(self.boss_name, True)
 
         return True
 
