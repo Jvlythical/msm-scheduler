@@ -54,7 +54,7 @@ def get_schedule(context: SimpleHTTPRequestHandler):
   for _schedule in schedules:
     teams = _schedule.teams
 
-    lines.append(f"=== {team.boss_name} schedules")
+    lines.append(f"=== {_schedule.boss_name} schedules")
     lines.append("")
 
     for team in teams:
