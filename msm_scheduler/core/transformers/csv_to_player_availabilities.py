@@ -6,20 +6,41 @@ DELIMITTER = ','
 class CSVToPlayerAvailabilitiesTransformer():
 
   def __init__(self, rows):
-    self.rows = rows
+    self.rows = list(rows) if hasattr(rows, '__iter__') else rows
+    self.column_map = self._create_column_map()
+
+  def _create_column_map(self):
+    """Create mapping from day names to actual column headers"""
+    if not self.rows:
+      return {}
+    
+    column_map = {}
+    first_row = self.rows[0]
+    for column in first_row.keys():
+      if column == 'Identity':
+        continue
+      day = self.extract_day(column)
+      column_map[day] = column
+    return column_map
+
+  def extract_day(self, header: str) -> str:
+    """Extract day name from header format like 'Monday-11/18'"""
+    if '-' in header:
+      return header.split('-')[0]
+    return header
 
   def tranform(self):
     availabilities = []
     for row in self.rows:
       availabilities.append({
-        'friday': self._to_availabilities(row['Friday'] or ''),
+        'friday': self._to_availabilities(row[self.column_map.get('Friday', 'Friday')] or ''),
         'identity': (row['Identity'] or '').strip(),
-        'monday': self._to_availabilities(row['Monday'] or ''),
-        'saturday': self._to_availabilities(row['Saturday'] or ''),
-        'sunday': self._to_availabilities(row['Sunday'] or ''),
-        'thursday': self._to_availabilities(row['Thursday'] or ''),
-        'tuesday': self._to_availabilities(row['Tuesday'] or ''),
-        'wednesday': self._to_availabilities(row['Wednesday'] or '')
+        'monday': self._to_availabilities(row[self.column_map.get('Monday', 'Monday')] or ''),
+        'saturday': self._to_availabilities(row[self.column_map.get('Saturday', 'Saturday')] or ''),
+        'sunday': self._to_availabilities(row[self.column_map.get('Sunday', 'Sunday')] or ''),
+        'thursday': self._to_availabilities(row[self.column_map.get('Thursday', 'Thursday')] or ''),
+        'tuesday': self._to_availabilities(row[self.column_map.get('Tuesday', 'Tuesday')] or ''),
+        'wednesday': self._to_availabilities(row[self.column_map.get('Wednesday', 'Wednesday')] or '')
       })
     return availabilities
 
