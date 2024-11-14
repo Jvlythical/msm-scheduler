@@ -28,6 +28,7 @@ class TeamsScheduler():
         for player in self.players:
             self.player_teams_index[player.name] = []
 
+        self.__assign_base_team_fills()
         self.__assign_base_team_interests()
 
     @property
@@ -164,11 +165,23 @@ class TeamsScheduler():
             for player in team.players:
                 self.assign_player_interests(player)
 
+    def __assign_base_team_fills(self):
+        # For the base team player's remaining interests, assign them a team
+        for team in self.base_teams:
+            schedule: Schedule = self.boss_schedules_index[team.boss_name]
+            for player in team.alternative_players:
+                schedule.add_fill(player)
+
     def __join_base_team_resources(self, base_teams: List[Team]):
         for team in base_teams:
             players = []
             for player_name in team.player_names:
                 players.append(self.players_index[player_name])
 
+            alternative_players = []
+            for player_name in team.fills:
+                alternative_players.append(self.players_index[player_name])
+
             team.boss = self.bosses_index.get(team.boss_name)
             team.players = players
+            team.alternative_players = alternative_players

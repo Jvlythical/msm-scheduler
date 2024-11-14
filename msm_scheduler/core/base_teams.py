@@ -13,6 +13,6 @@ def construct_base_teams(players: List[Player]):
     base_teams: List[Team] = []
     for (boss, time) in boss_time_count.keys():
         if boss_time_count[boss, time] > 10:
-            base_teams.append(Team(time=time, boss_name=boss, player_names=[]))
+            base_teams.append(Team(time=time, boss_name=boss, fills=[], player_names=[]))
 
     return base_teams

@@ -3,7 +3,7 @@ CREDENTIALS_FILE_NAME = 'credentials.json'
 TOKEN_ENV = 'MSM_SCHEDULER_TOKEN_JSON'
 TOKEN_FILE_NAME = 'token.json'
 
-BASE_TEAMS = 'Base Teams!A1:C'
+BASE_TEAMS = 'Base Teams!A1:D'
 BOSSES = 'Bosses!A1:F'
 PLAYER_AVAILABILITY = 'Player Availability!A1:H'
 PLAYER_EXPERIENCES = 'Player Experiences!A1:F'

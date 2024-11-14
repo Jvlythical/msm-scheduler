@@ -16,6 +16,7 @@ class Team:
         self.availability_conflicts: List[Player] = []
         self.boss = None
         self.boss_name = kwargs.get('boss_name')
+        self.fills = kwargs.get('fills', []) 
         self.interest_conflicts: List[Player] = []
         self.players: List[Player] = [] # This has to be set first otherwise self.player_names will be cleared
         self.player_names = kwargs.get('player_names', [])
@@ -37,6 +38,22 @@ class Team:
         self._time = value
 
     @property
+    def alternative_players(self):
+        return self._alternative_players
+
+    @alternative_players.setter
+    def alternative_players(self, value: List[Player]):
+        self._alternative_players = value
+        self._fills = list(map(lambda player: player.name, value))
+
+        for player in value:
+            try:
+                player.remove_interest(self.boss_name)
+            except RuntimeError:
+                # For fills we don't care if they are interested
+                pass
+
+    @property
     def boss(self):
         return self._boss
 
@@ -56,12 +73,22 @@ class Team:
         self._boss_name = value
 
     @property
+    def fills(self):
+        return self._fills
+
+    @fills.setter
+    def fills(self, value: List[str]):
+        if not all(isinstance(fill, str) for fill in value):
+            raise ValueError("All player entries must be strings")
+        self._fills = value
+
+    @property
     def player_names(self):
         return self._player_names
 
     @player_names.setter
     def player_names(self, value: List[str]):
-        if not all(isinstance(day, str) for day in value):
+        if not all(isinstance(player, str) for player in value):
             raise ValueError("All player entries must be strings")
         self._player_names = value
 
