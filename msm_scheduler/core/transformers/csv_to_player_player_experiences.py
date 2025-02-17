@@ -1,4 +1,4 @@
-from ...constants.boss import HARD_DAMIEN, LUCID, LOTUS, NORMAL_DAMIEN, WILL
+from ...constants.boss import GLOOM, HARD_ARCHON, HARD_DAMIEN, LUCID, LOTUS, NORMAL_DAMIEN, WILL
 
 class CSVToPlayerExperiencesTransformer():
 
@@ -9,6 +9,8 @@ class CSVToPlayerExperiencesTransformer():
     experiences = []
     for row in self.rows:
       experience = {
+        GLOOM: int(row['Gloom']) if row['Gloom'] else 0,
+        HARD_ARCHON: int(row['Hard Archon']) if row['Hard Archon'] else 0,
         HARD_DAMIEN: int(row['Hard Damien']) if row['Hard Damien'] else 0,
         LOTUS: int(row['Lotus']) if row['Lotus'] else 0,
         LUCID: int(row['Lucid']) if row['Lucid'] else 0,

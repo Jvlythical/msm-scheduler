@@ -1,4 +1,4 @@
-from ...constants.boss import HARD_DAMIEN, LUCID, LOTUS, NORMAL_DAMIEN, WILL
+from ...constants.boss import GLOOM, HARD_ARCHON, HARD_DAMIEN, LUCID, LOTUS, NORMAL_DAMIEN, WILL
 
 class CSVToPlayerInterestsTransformer():
 
@@ -9,6 +9,8 @@ class CSVToPlayerInterestsTransformer():
     experiences = []
     for row in self.rows:
       experience = {
+        GLOOM: self.is_interested(row.get('GLoom') or row.get('Gloom')),
+        HARD_ARCHON: self.is_interested(row.get('Hard Archon') or row.get('Hard Archon')),
         HARD_DAMIEN: self.is_interested(row.get('Hard Damien') or row.get('Hard Damien')),
         LOTUS: self.is_interested(row.get('Lotus') or row.get('Lotus')),
         LUCID: self.is_interested(row.get('Lucid') or row.get('Lucid')),

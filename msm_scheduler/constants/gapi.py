@@ -4,10 +4,10 @@ TOKEN_ENV = 'MSM_SCHEDULER_TOKEN_JSON'
 TOKEN_FILE_NAME = 'token.json'
 
 BASE_TEAMS = 'Base Teams!A1:D'
-BOSSES = 'Bosses!A1:F'
+BOSSES = 'Bosses!A1:G'
 PLAYER_AVAILABILITY = 'Player Availability!A1:H'
-PLAYER_EXPERIENCES = 'Player Experiences!A1:F'
-PLAYER_INTERESTS = 'Player Interests!A1:F'
+PLAYER_EXPERIENCES = 'Player Experiences!A1:H'
+PLAYER_INTERESTS = 'Player Interests!A1:H'
 PLAYERS_SPREADSHEET = 'Players!A1:F'
 
 SPREADSHEET_COLUMNS = [

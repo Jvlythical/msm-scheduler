@@ -23,7 +23,7 @@ class GoogleSpreadSheetTransformer():
         df.dropna(subset=['Max Damage Cap (in M)', 'HP (in K)'], inplace=True)
 
         # Mising entry in experience column is set to 0
-        for boss in ['Lotus', 'Normal Damien', 'Hard Damien', 'Lucid', 'Will']:
+        for boss in ['Gloom', 'Lotus', 'Normal Damien', 'Hard Damien', 'Lucid', 'Will', 'Hard Archon']:
             df[boss] = pd.to_numeric(df[boss])
             df[boss] = df[boss].fillna(0).astype(int)
 
@@ -78,19 +78,23 @@ class GoogleSpreadSheetTransformer():
 
             # === Experiences
             experiences.append({
-                'name': row['Name'],
+                'gloom': row['Gloom'],
+                'hard_archon': row['Hard Archon'],
                 'hard_damien': row['Hard Damien'],
                 'lotus': row['Lotus'],
-                'normal_damien': row['Normal Damien'],
                 'lucid': row['Lucid'],
+                'name': row['Name'],
+                'normal_damien': row['Normal Damien'],
                 'will': row['Will']
             })
 
             # === Interests
             interests.append({
-                'name': row['Name'],
+                'gloom': 1 if row['Gloom_interest'] else 0,
+                'hard_archon': 1 if row['Hard Archon_interest'] else 0,
                 'hard_damien': 1 if row['Hard Damien_interest'] else 0,
                 'lotus': 1 if row['Lotus_interest'] else 0,
+                'name': row['Name'],
                 'normal_damien': 1 if row['Normal Damien_interest'] else 0,
                 'lucid': 1 if row['Lucid_interest'] else 0,
                 'will': 1 if row['Will_interest'] else 0
