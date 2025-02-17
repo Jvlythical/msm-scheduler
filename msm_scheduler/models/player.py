@@ -128,7 +128,7 @@ class Player:
         if self.availability_count[time] >= AVAILABILITY_USAGES:
             self.availability.remove(time)
 
-    def remove_interest(self, boss_name: str):
+    def remove_interest(self, boss_name: str, **options):
         if boss_name not in self.interests:
             interests = "\n".join(self.interests)
             raise RuntimeError(f"=== {self.name} is not interested in {boss_name}\n~ Interests\n{interests}")
@@ -141,11 +141,15 @@ class Player:
             # Since a player can only clear one variant a week, if they are no longer
             # interested in the boss, this is interpreted as they are no longer
             # interested in all variants. Remove all variants from their interests
-            for boss_name in variants:
-                if boss_name not in self.interests:
+            for variant in variants:
+                if variant not in self.interests:
                     continue
-
-                del self.interests[self.interests.index(boss_name)]
+                    
+                # Provide the option to not remove variants from interests
+                if options.get('ignore_variants') and variant != boss_name:
+                    continue
+                
+                del self.interests[self.interests.index(variant)]
 
     def __repr__(self):
         return (

@@ -48,7 +48,7 @@ class Team:
 
         for player in value:
             try:
-                player.remove_interest(self.boss_name)
+                player.remove_interest(self.boss_name, ignore_variants=True)
             except RuntimeError:
                 # For fills we don't care if they are interested
                 pass
@@ -174,6 +174,7 @@ class Team:
         for assigned_player in self.players:
             if player.identity == assigned_player.identity:
                 return False
+
         return self.time in player.availability
 
     def __repr__(self):
