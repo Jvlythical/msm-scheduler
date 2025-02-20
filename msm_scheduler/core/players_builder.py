@@ -75,12 +75,15 @@ class PlayersBuilder():
             experience = experiences_index.get(stat['name'])
             interests = interests_index.get(stat['name'])
 
-            player = Player(
-                **stat,
-                availability=availability,
-                experience=experience or {},
-                interests=interests or {}
-            )
+            try:
+                player = Player(
+                    **stat,
+                    availability=availability,
+                    experience=experience or {},
+                    interests=interests or {}
+                )
+            except ValueError as e:
+                continue
 
             if len(availability) == 0:
                 Logger.instance(LOG_ID).warn(f"{bcolors.WARNING}{player.name} has no availability{bcolors.ENDC}")
