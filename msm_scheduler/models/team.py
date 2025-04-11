@@ -1,6 +1,5 @@
 import numpy as np
 import pdb
-
 from typing import List
 
 from ..constants.boss import VALID_BOSSES
@@ -8,11 +7,12 @@ from ..core.team_clear_prbs import TeamClearProbabilityModel
 from ..types import TeamParams
 from .boss import Boss
 from .player import Player
+from ..core.team_roles import TeamRoles
 
 class Team:
     def __init__(self, **kwargs: TeamParams):
         self.time = kwargs.get('time')
-
+        self.database = kwargs.get('database')
         self.availability_conflicts: List[Player] = []
         self.boss = None
         self.boss_name = kwargs.get('boss_name')
@@ -22,6 +22,7 @@ class Team:
         self.player_names = kwargs.get('player_names', [])
         self.tcpm = TeamClearProbabilityModel()
         # self.tcpm.fit()
+        self._roles = None
 
     @property
     def time(self):
@@ -176,6 +177,25 @@ class Team:
                 return False
 
         return self.time in player.availability
+
+    @property
+    def roles(self) -> TeamRoles:
+        if not self._roles and self.boss and self.boss_name in ['hard_damien', 'normal_damien']:
+            # Debug print role configs
+            print(f"Creating TeamRoles for {self.boss_name} with role configs: {self.database.role_configs if hasattr(self, 'database') else 'No database'}")
+            role_configs = []
+            if hasattr(self, 'database') and hasattr(self.database, 'role_configs'):
+                role_configs = self.database.role_configs
+            self._roles = TeamRoles(self.players, self.boss, role_configs)
+        return self._roles
+
+    def get_formatted_players(self) -> List[tuple[Player, str]]:
+        """Returns players with their role labels"""
+        if not self.roles:
+            return [(p, '') for p in self.players]
+            
+        ordered = self.roles.get_ordered_players()
+        return [(p, f" - {'/'.join(roles)}" if roles else '') for p, roles in ordered]
 
     def __repr__(self):
         return (f"Team(boss_name={self.boss_name}, player_names={self.player_names}, "

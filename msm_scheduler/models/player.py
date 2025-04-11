@@ -20,6 +20,8 @@ class Player:
         self.interests = kwargs.get('interests', {})
         self.max_damage_cap = kwargs.get('max_damage_cap', 0)
         self.name = kwargs.get('name', '')
+        self.discord_id = kwargs.get('discord_id', '')
+        self.player_class = kwargs.get('class', '')
 
     @property
     def name(self):
@@ -30,6 +32,14 @@ class Player:
         if not value:
             raise ValueError("Name cannot be empty")
         self._name = value
+
+    @property
+    def discord_id(self):
+        return self._discord_id
+
+    @discord_id.setter
+    def discord_id(self, value: str):
+        self._discord_id = value
 
     @property
     def max_damage_cap(self):

@@ -11,6 +11,7 @@ class CSVToPlayersTransformer():
       identity = (row['Identity'] or '').strip()
       max_damage_cap = float(row['Max Damage Cap']) if row['Max Damage Cap'] else 0
       name = (row['Name'] or '').strip()
+      player_class = (row['Class'] or '').strip()
 
       players.append({
         'arcane_power': arcane_power,
@@ -18,6 +19,7 @@ class CSVToPlayersTransformer():
         'identity': identity,
         'max_damage_cap': max_damage_cap,
         'name': name,
+        'class': player_class
       })
 
     return players

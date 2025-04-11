@@ -9,6 +9,8 @@ from ..transformers.csv_to_players import CSVToPlayersTransformer
 from ..transformers.csv_to_player_availabilities import CSVToPlayerAvailabilitiesTransformer
 from ..transformers.csv_to_player_interests import CSVToPlayerInterestsTransformer
 from ..transformers.csv_to_player_player_experiences import CSVToPlayerExperiencesTransformer
+from ..transformers.csv_to_player_discord_ids import CSVToPlayerDiscordIdsTransformer
+from ..transformers.csv_to_role_config import CSVToRoleConfigTransformer
 
 class FileImporter():
 
@@ -69,7 +71,25 @@ class FileImporter():
       rows = csv.DictReader(file)
       return CSVToPlayersTransformer(rows).tranform()
 
+  @property
+  def player_discord_ids(self):
+    if not os.path.exists(self.config.discord_ids_csv_path):
+      return []
+
+    with open(self.config.discord_ids_csv_path, mode='r') as file:
+      rows = csv.DictReader(file)
+      return CSVToPlayerDiscordIdsTransformer(rows).tranform()
+
+  @property
+  def role_configs(self):
+    if not hasattr(self.config, 'role_configs_csv_path') or not os.path.exists(self.config.role_configs_csv_path):
+      return []
+    
+    with open(self.config.role_configs_csv_path, mode='r') as file:
+      rows = csv.DictReader(file)
+      return CSVToRoleConfigTransformer(rows).transform()
+
   def get(self):
     return [
-      self.player_stats, self.player_experiences, self.player_interests, self.player_availabilities, self.bosses, self.base_teams
+      self.player_stats, self.player_experiences, self.player_interests, self.player_availabilities, self.player_discord_ids, self.bosses, self.base_teams, self.role_configs
     ]

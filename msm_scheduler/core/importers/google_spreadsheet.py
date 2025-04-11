@@ -12,14 +12,15 @@ from googleapiclient.errors import HttpError
 from .file import FileImporter
 from ..config import Config
 from ...constants.gapi import (
-    CREDENTIALS_FILE_NAME, TOKEN_ENV, PLAYER_EXPERIENCES, PLAYERS_SPREADSHEET, PLAYER_AVAILABILITY, PLAYER_INTERESTS, SCOPES, TOKEN_FILE_NAME
+    CREDENTIALS_FILE_NAME, TOKEN_ENV, PLAYER_EXPERIENCES, PLAYERS_SPREADSHEET, PLAYER_AVAILABILITY, PLAYER_INTERESTS, PLAYER_DISCORD_IDS, ROLE_CONFIGS, SCOPES, TOKEN_FILE_NAME
 )
 
 SPREADSHEET_COLUMNS = [
     PLAYERS_SPREADSHEET,
     PLAYER_EXPERIENCES,
     PLAYER_INTERESTS,
-    PLAYER_AVAILABILITY
+    PLAYER_AVAILABILITY,
+    PLAYER_DISCORD_IDS
 ]
 
 class GoogleSpreadSheetImporter():
@@ -68,7 +69,7 @@ class GoogleSpreadSheetImporter():
             data_frames = [self._get_google_spreadsheet_range(sheet, col) for col in self.columns]
         except HttpError as err:
             print(err)
-            return [[], [], [], [], [], []]
+            return [[], [], [], [], [], [], [], []]
 
         df = pd.DataFrame(data_frames[0])
         with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
@@ -90,15 +91,25 @@ class GoogleSpreadSheetImporter():
             config.player_availabilities_csv_path = tmp.name
             tmp.write(df.to_csv())
 
-        if len(data_frames) > 4:
-            df = pd.DataFrame(data_frames[4])
+        df = pd.DataFrame(data_frames[4])
+        with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
+            config.discord_ids_csv_path = tmp.name
+            tmp.write(df.to_csv())
+
+        if len(data_frames) > 5:
+            df = pd.DataFrame(data_frames[5])
             with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
                 config.bosses_csv_path = tmp.name
                 tmp.write(df.to_csv())
 
-            df = pd.DataFrame(data_frames[5])
+            df = pd.DataFrame(data_frames[6])
             with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
                 config.base_teams_csv_path = tmp.name
+                tmp.write(df.to_csv())
+
+            df = pd.DataFrame(data_frames[7])
+            with tempfile.NamedTemporaryFile(delete=False, mode='w') as tmp:
+                config.role_configs_csv_path = tmp.name
                 tmp.write(df.to_csv())
 
         return FileImporter(config).get()
@@ -106,6 +117,20 @@ class GoogleSpreadSheetImporter():
     def _get_google_spreadsheet_range(self, sheet, sheet_range):
         result = sheet.values().get(spreadsheetId=self.sheet_id, range=sheet_range).execute()
         values = result.get("values", [])
+        
+        if not values:
+            return pd.DataFrame()
+        
+        # Get the header row
+        headers = values[0]
+        num_cols = len(headers)
+        
+        # Pad each data row to match header length
+        padded_data = []
+        for row in values[1:]:
+            # Extend row with empty strings if it's shorter than headers
+            padded_row = row + [''] * (num_cols - len(row))
+            padded_data.append(padded_row)
 
-        return pd.DataFrame(values[1:], columns=values[0])
+        return pd.DataFrame(padded_data, columns=headers)
 

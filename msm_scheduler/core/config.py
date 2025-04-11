@@ -85,6 +85,22 @@ class Config:
   def settings_spreadsheet_id(self, v: str):
     self._settings_spreadsheet_id = v
 
+  @property
+  def discord_ids_csv_path(self):
+    return self._discord_ids_csv_path
+
+  @discord_ids_csv_path.setter
+  def discord_ids_csv_path(self, v):
+    self._discord_ids_csv_path = v
+
+  @property
+  def role_configs_csv_path(self):
+    return self._role_configs_csv_path
+
+  @role_configs_csv_path.setter
+  def role_configs_csv_path(self, v: str):
+    self._role_configs_csv_path = v
+
   def load(self):
     with open(self.path, 'r') as fp:
       config = yaml.safe_load(fp) or {}
@@ -96,7 +112,9 @@ class Config:
       self.player_experiences_csv_path = config.get('player_experiences_csv_path') or ''
       self.player_interests_csv_path = config.get('player_interests_csv_path') or ''
       self.players_csv_path = config.get('players_csv_path') or ''
+      self.discord_ids_csv_path = config.get('discord_ids_csv_path') or ''
       self.settings_spreadsheet_id = os.environ.get(SETTINGS_SPREADSHEET_ID_ENV) or config.get('settings_spreadsheet_id') or ''
+      self.role_configs_csv_path = config.get('role_configs_csv_path') or ''
 
   def _create_default_file(self):
     with open(self.path, 'w') as fp:
@@ -107,8 +125,10 @@ class Config:
         'inputs_spreadsheet_id': '',
         'player_availabilities_csv_path': '',
         'player_experiences_csv_path': '',
-        'player_interets_csv_path': '',
+        'player_interests_csv_path': '',
         'players_csv_path': '',
+        'discord_ids_csv_path': '',
         'settings_spreadsheet_id': '',
+        'role_configs_csv_path': '',
       }
       fp.write(yaml.safe_dump(config))
