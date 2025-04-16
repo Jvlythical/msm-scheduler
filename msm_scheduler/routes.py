@@ -1,6 +1,7 @@
 from .lib.simple_http_request_handler import SimpleHTTPRequestHandler
 from .availability import build_boss_players
 from .schedule import schedule
+from .lib.time_utils import get_next_timestamp, format_team_time
 
 def get_availability(context: SimpleHTTPRequestHandler):
   try:
@@ -58,10 +59,15 @@ def get_schedule(context: SimpleHTTPRequestHandler):
     lines.append("")
 
     for team in teams:
+      day, hour = team.time.split('.')
+      timestamp = get_next_timestamp(day, int(hour))
+      
       lines.append(f"~ {team.time} filled {len(team.players)}/{team.boss.capacity}")
+      lines.append(format_team_time(team.time, team.boss_name))
 
-      for player in team.players:
-          lines.append(f"{player.name}") 
+      for player, role_label in team.get_formatted_players():
+        discord_tag = f"@{player.discord_id}" if player.discord_id else player.name
+        lines.append(f"{discord_tag} ({player.name}){role_label}")
 
       if len(team.availability_conflicts) > 0:
         lines.append("")
@@ -80,7 +86,8 @@ def get_schedule(context: SimpleHTTPRequestHandler):
     if len(_schedule.fills) > 0:
         lines.append(f"~ Fills")
         for player in _schedule.fills:
-            lines.append(f"{player.name}")
+            discord_tag = f"@{player.discord_id}" if player.discord_id else player.name
+            lines.append(f"{discord_tag} ({player.name})")
         lines.append("")
 
   context.render(
@@ -89,6 +96,14 @@ def get_schedule(context: SimpleHTTPRequestHandler):
   )
 
 def __to_html(body: str):
+  # Escape HTML characters to display Discord tags correctly
+  body = body.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+  
+  # Convert markdown links to HTML links, but preserve calendar links
+  import re
+  link_pattern = r'\[(.*?)\]\((.*?)\)'
+  body = re.sub(link_pattern, lambda m: m.group(0) if 'calendar' in m.group(2) else f'<a href="{m.group(2)}" target="_blank">{m.group(1)}</a>', body)
+  
   head = ['<head>', '<meta charset="UTF-8">', '</head>']
   body = ['<body>', '<pre>', body, '</pre>', '</body>']
   return "\n".join(head + body)

@@ -12,6 +12,10 @@ class Database():
         self.player_experiences = []
         self.player_interests = []
         self.player_availabilities = []
+        self.player_discord_ids = []
+        self.bosses = []
+        self.base_teams = []
+        self.role_configs = []
 
     def load_from_google_spreadsheet(self, spreadsheet_importer: GoogleSpreadSheetImporter = None):
         tables = spreadsheet_importer.get()
@@ -34,9 +38,13 @@ class Database():
         if tables[3]:
             self.player_availabilities = tables[3]
 
-        if len(tables) > 4:
-            self.bosses = tables[4]
-            self.base_teams = tables[5]
+        if tables[4]:
+            self.player_discord_ids = tables[4]
+
+        if len(tables) > 5:
+            self.bosses = tables[5]
+            self.base_teams = tables[6]
+            self.role_configs = tables[7]
 
     def right_merge_tables(self, tables: list):
         if tables[0]:
@@ -51,9 +59,13 @@ class Database():
         if tables[3]:
             self.right_merge_player_availabilities(tables[3])
 
-        if len(tables) > 4:
-            self.right_merge_bosses(tables[4])
-            self.right_merge_base_teams(tables[5])
+        if tables[4]:
+            self.right_merge_player_discord_ids(tables[4])
+
+        if len(tables) > 5:
+            self.right_merge_bosses(tables[5])
+            self.right_merge_base_teams(tables[6])
+            self.right_merge_role_configs(tables[7])
 
     @property
     def base_teams(self):
@@ -103,6 +115,14 @@ class Database():
     def player_stats(self, v):
         self._player_stats = v
 
+    @property
+    def role_configs(self):
+        return self._role_configs
+
+    @role_configs.setter
+    def role_configs(self, v):
+        self._role_configs = v
+
     def right_merge_bosses(self, bosses: list):
         self.right_merge(self.bosses, bosses, lambda row: row['name'])
 
@@ -120,6 +140,12 @@ class Database():
 
     def right_merge_player_stats(self, player_stats: list):
         self.right_merge(self.player_stats, player_stats, lambda row: row['name'])
+
+    def right_merge_player_discord_ids(self, player_discord_ids: list):
+        self.right_merge(self.player_discord_ids, player_discord_ids, lambda row: row['identity'])
+
+    def right_merge_role_configs(self, role_configs: list):
+        self.right_merge(self.role_configs, role_configs, lambda row: row['role_name'])
 
     def right_merge(self, table1: list, table2: list, get_key = None):
         index = {}

@@ -1,6 +1,6 @@
-Name,HP Required,Total Max Damage Cap Required,Arcane Power Required,Difficulty,Capacity
+Name,HP Required,Total Max Damage Cap Required,Arcane Power Required,Difficulty,Capacity,Availability
 lotus,100,150,,5,10
-hard_damien,180,350,,10,10
+hard_damien,80,400,10,75,3,10,"Monday,Wednesday"
 normal_damien,190,250,,5,10
 lucid,150,300,660,5,10
 will,,,,,10

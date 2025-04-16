@@ -9,10 +9,15 @@ LOG_ID = 'PlayersBuilder'
 
 class PlayersBuilder():
     def __init__(self):
+        self.stats = []
         self.availabilities = []
         self.experiences = []
         self.interests = []
-        self.stats = []
+        self.discord_ids = []
+
+    def with_discord_ids(self, discord_ids):
+        self.discord_ids = discord_ids
+        return self
 
     def with_availabilities(self, availabilites: List[PlayerAvailability]):
         self.availabilities = availabilites
@@ -64,25 +69,46 @@ class PlayersBuilder():
             interests_index[interest['name']] = clone
         return interests_index
 
+    def build_discord_index(self):
+        discord_index = {}
+        if not self.discord_ids:  # Handle case when no discord IDs are provided
+            return discord_index
+        
+        for row in self.discord_ids:
+            if 'identity' in row and 'discord_id' in row:
+                discord_index[row['identity'].strip()] = row['discord_id'].strip()
+        
+        return discord_index
+
     def build(self):
         availabilities_index = self.build_availabilities_index()
         experiences_index = self.build_experiences_index()
         interests_index = self.build_interests_index()
+        discord_index = self.build_discord_index()
 
         players = []
         for stat in self.stats:
-            availability = availabilities_index[stat['identity']]
+            try:
+                availability = availabilities_index[stat['identity']]
+            except KeyError:
+                Logger.instance(LOG_ID).warn(f"{bcolors.WARNING}No availability found for {stat['name']}{bcolors.ENDC}")
+                continue
+
             experience = experiences_index.get(stat['name'])
             interests = interests_index.get(stat['name'])
+            discord_id = discord_index.get(stat['identity'])
 
             try:
                 player = Player(
                     **stat,
                     availability=availability,
                     experience=experience or {},
-                    interests=interests or {}
+                    interests=interests or {},
+                    discord_id=discord_id
                 )
+                players.append(player)
             except ValueError as e:
+                Logger.instance(LOG_ID).warn(f"{bcolors.WARNING}Failed to create player {stat['name']}: {e}{bcolors.ENDC}")
                 continue
 
             if len(availability) == 0:
@@ -94,6 +120,7 @@ class PlayersBuilder():
             if not interests:
                 Logger.instance(LOG_ID).warn(f"{bcolors.WARNING}Could not join {player.name} interests{bcolors.ENDC}")
 
-            players.append(player)
+            if not discord_id and self.discord_ids:
+                Logger.instance(LOG_ID).warn(f"{bcolors.WARNING}Could not join {player.name} discord_id{bcolors.ENDC}")
 
         return players

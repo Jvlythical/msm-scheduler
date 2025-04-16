@@ -52,11 +52,20 @@ player_interests = [
     {'name': 'Warrior', 'hard_damien': 'Y'},
 ]
 
+player_discord_ids = [
+    {'Identity': '1', 'Discord ID': '1234567890'},
+    {'Identity': '2', 'Discord ID': '2234567890'},
+    {'Identity': '3', 'Discord ID': '3234567890'},
+    {'Identity': '4', 'Discord ID': '4234567890'},
+]
+
 builder = PlayersBuilder()
 builder.with_availabilities(player_availabilities)
 builder.with_experiences(player_experiences)
 builder.with_interests(player_interests)
 builder.with_stats(player_stats)
+builder.with_discord_ids(player_discord_ids)
+
 players = builder.build()
 
 boss_players = BossPlayers(players=players, bosses=bosses)

@@ -52,6 +52,7 @@ class GoogleSpreadSheetTransformer():
         availability_ids = set()
         interests = []
         experiences = []
+        discord_ids = []
 
         for i, row in df.iterrows():
             if row['Identity'] in availability_ids:
@@ -64,8 +65,16 @@ class GoogleSpreadSheetTransformer():
                 'identity': row['Identity'],
                 'max_damage_cap': row['MDC'],
                 'name': row['Name'],
-                'class': row['Class']
+                'class': row['Class'].strip()
             })
+
+            # === Discord IDs
+            if 'Discord ID' in row:  # Add debug print
+                print(f"Found Discord ID for {row['Identity']}: {row['Discord ID']}")
+                discord_ids.append({
+                    'identity': row['Identity'],
+                    'discord_id': str(row['Discord ID']).strip()
+                })
 
             # === Availabilities
             n_ids = len(availability_ids)
@@ -100,4 +109,4 @@ class GoogleSpreadSheetTransformer():
                 'will': 1 if row['Will_interest'] else 0
             })
 
-        return stats, experiences, interests, availabilities
+        return stats, experiences, interests, availabilities, discord_ids

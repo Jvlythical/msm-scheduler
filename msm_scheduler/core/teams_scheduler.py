@@ -3,17 +3,19 @@ import pdb
 from typing import Callable, Dict, List
 
 from ..lib.logger import bcolors, Logger
-from ..models import Boss, Player, Team
+from ..models import Boss, Player, Team, RoleConfig
 from .boss_players import BossPlayers
 from .schedule import Schedule
+from .team_roles import TeamRoles
 
 LOG_ID = 'TeamsScheduler'
 
 class TeamsScheduler():
 
-    def __init__(self, boss_players: BossPlayers, base_teams: List[Team]):
+    def __init__(self, boss_players: BossPlayers, base_teams: List[Team], role_configs: List[RoleConfig] = None):
         self.boss_players = boss_players
         self.base_teams = base_teams
+        self.role_configs = role_configs or []
         self.fills = []
 
         self.__join_base_team_resources(base_teams)
@@ -133,6 +135,13 @@ class TeamsScheduler():
                 if not player:
                     break
                 schedule.add_fill(player)
+
+        # After all teams are filled, assign roles to each team
+        for schedule in schedules:
+            for team in schedule.teams:
+                if team.boss and team.boss_name in ['hard_damien', 'normal_damien']:
+                    # Create TeamRoles with all available players
+                    team._roles = TeamRoles(team.players, team.boss, self.role_configs)
 
         return schedules
 
