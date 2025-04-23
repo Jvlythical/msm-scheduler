@@ -10,7 +10,7 @@ from .core.players_builder import PlayersBuilder
 from .core.teams_scheduler import TeamsScheduler
 from .lib.logger import bcolors, Logger
 from .models import Boss, Team, RoleConfig
-from .lib.time_utils import get_next_timestamp, format_team_time
+from .lib.time_utils import get_next_timestamp, format_team_time, parse_team_time
 from .core.base_teams import construct_base_teams
 
 LOG_ID = 'Schedule'
@@ -46,7 +46,14 @@ def schedule():
     players = builder.build()
 
     bosses = list(map(lambda row: Boss(**row), database.bosses))
-    base_teams = list(map(lambda row: Team(**row), database.base_teams))
+    base_teams = []
+    for row in database.base_teams:
+        team = Team(**row)
+        # Set team name to time if not provided
+        if not team.team_name:
+            team.team_name = team.time
+        base_teams.append(team)
+    
     boss_players = BossPlayers(players=players, bosses=bosses)
     
     # Pass role configs to scheduler
@@ -60,18 +67,29 @@ if __name__ == '__main__':
 
     for _schedule in schedules:
         teams = _schedule.teams
-        Logger.instance(LOG_ID).info(f"{bcolors.OKBLUE}{_schedule.boss_name} schedules\n{bcolors.ENDC}")
+        # Format boss name in Title Case and replace underscores with spaces
+        formatted_boss_name = _schedule.boss_name.replace('_', ' ').title()
+        Logger.instance(LOG_ID).info(f"{bcolors.OKBLUE}{formatted_boss_name} schedules\n{bcolors.ENDC}")
 
         for team in teams:
-            day, hour = team.time.split('.')
-            timestamp = get_next_timestamp(day, int(hour))
-            
-            Logger.instance(LOG_ID).info(f"{bcolors.OKCYAN}{team.time} filled {len(team.players)}/{team.boss.capacity}{bcolors.ENDC}")
-            Logger.instance(LOG_ID).info(format_team_time(team.time))
+            # Get day from team time
+            day, _, _ = parse_team_time(team.time)
+            # Format team name as "Boss Name Day: TeamName"
+            formatted_team_name = f"{formatted_boss_name} {day.capitalize()}: {team.team_name}"
+            Logger.instance(LOG_ID).info(f"{bcolors.OKCYAN}{formatted_team_name}{bcolors.ENDC}")
+            Logger.instance(LOG_ID).info(format_team_time(team.time, _schedule.boss_name))
 
-            for player, role_label in team.get_formatted_players():
+            # Get formatted players
+            formatted_players = list(team.get_formatted_players())
+            
+            # Add numbered entries for all players
+            for i, (player, role_label) in enumerate(formatted_players, 1):
                 discord_tag = f"@{player.discord_id}" if player.discord_id else player.name
-                print(f"{discord_tag} ({player.name}){role_label}")
+                print(f"{i}. {discord_tag} ({player.name}){role_label}")
+            
+            # Add FILL entries for remaining slots
+            for i in range(len(formatted_players) + 1, team.boss.capacity + 1):
+                print(f"{i}. FILL")
 
             if len(team.availability_conflicts) > 0:
                 Logger.instance(LOG_ID).warning(f"{bcolors.WARNING}Availability Conflicts{bcolors.ENDC}")

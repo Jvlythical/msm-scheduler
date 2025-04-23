@@ -1,6 +1,6 @@
 import numpy as np
 import pdb
-from typing import List
+from typing import List, Optional
 
 from ..constants.boss import VALID_BOSSES
 from ..core.team_clear_prbs import TeamClearProbabilityModel
@@ -8,6 +8,7 @@ from ..types import TeamParams
 from .boss import Boss
 from .player import Player
 from ..core.team_roles import TeamRoles
+from ..lib.time_utils import parse_team_time
 
 class Team:
     def __init__(self, **kwargs: TeamParams):
@@ -23,20 +24,24 @@ class Team:
         self.tcpm = TeamClearProbabilityModel()
         # self.tcpm.fit()
         self._roles = None
+        self.team_name = kwargs.get('team_name', self.time)
 
     @property
-    def time(self):
+    def time(self) -> str:
         return self._time
 
-    @property
-    def time_by_day(self):
-        return self._time.split('.')[0]
-
     @time.setter
-    def time(self, value: List[str]):
+    def time(self, value: str):
         if not isinstance(value, str):
             raise ValueError("Time must be a string")
+        # Validate the time format
+        parse_team_time(value)  # This will raise ValueError if format is invalid
         self._time = value
+
+    @property
+    def time_by_day(self) -> str:
+        day, _, _ = parse_team_time(self._time)
+        return day
 
     @property
     def alternative_players(self):
@@ -197,6 +202,27 @@ class Team:
         ordered = self.roles.get_ordered_players()
         return [(p, f" - {'/'.join(roles)}" if roles else '') for p, roles in ordered]
 
+    @property
+    def team_name(self) -> str:
+        return self._team_name
+
+    @team_name.setter
+    def team_name(self, value: str):
+        if not isinstance(value, str):
+            raise ValueError("Team name must be a string")
+        self._team_name = value
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @timestamp.setter
+    def timestamp(self, value):
+        self._timestamp = value
+
     def __repr__(self):
         return (f"Team(boss_name={self.boss_name}, player_names={self.player_names}, "
                 f"time={self.time})")
+
+    def __str__(self) -> str:
+        return f"{self.team_name} - {self.boss_name} ({len(self.players)}/{self.boss.capacity if self.boss else 0})"

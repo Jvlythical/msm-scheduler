@@ -1,22 +1,24 @@
 import pdb
 
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Optional
 
 from ..lib.logger import bcolors, Logger
 from ..models import Boss, Player, Team, RoleConfig
 from .boss_players import BossPlayers
 from .schedule import Schedule
 from .team_roles import TeamRoles
+from ..lib.time_utils import parse_team_time, get_next_timestamp
 
 LOG_ID = 'TeamsScheduler'
 
 class TeamsScheduler():
 
-    def __init__(self, boss_players: BossPlayers, base_teams: List[Team], role_configs: List[RoleConfig] = None):
+    def __init__(self, boss_players: BossPlayers, base_teams: List[Team], role_configs: Optional[Dict] = None):
         self.boss_players = boss_players
         self.base_teams = base_teams
-        self.role_configs = role_configs or []
+        self.role_configs = role_configs or {}
         self.fills = []
+        self._processed_teams = set()
 
         self.__join_base_team_resources(base_teams)
         
@@ -194,3 +196,30 @@ class TeamsScheduler():
             team.boss = self.bosses_index.get(team.boss_name)
             team.players = players
             team.alternative_players = alternative_players
+
+    def schedule(self) -> List[Team]:
+        for team in self.base_teams:
+            if team.time in self._processed_teams:
+                continue
+            self._processed_teams.add(team.time)
+            self._schedule_team(team)
+        return self.base_teams
+
+    def _schedule_team(self, team: Team):
+        day, hour, minutes = parse_team_time(team.time)
+        timestamp = get_next_timestamp(day, hour, minutes)
+        team.timestamp = timestamp
+
+        # Find available bosses for this time
+        available_bosses = [b for b in self.bosses if b.is_available_at(timestamp)]
+        if not available_bosses:
+            return
+
+        # Sort bosses by priority and assign the highest priority available boss
+        available_bosses.sort(key=lambda b: b.priority, reverse=True)
+        team.boss = available_bosses[0]
+        team.boss_name = team.boss.name
+
+        # Assign roles after boss is set
+        if self.role_configs:
+            team._roles = TeamRoles(team, self.role_configs)
