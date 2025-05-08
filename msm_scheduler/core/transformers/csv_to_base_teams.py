@@ -19,12 +19,14 @@ class CSVToBaseTeamsTransformer():
         player_names = list(map(lambda data: data.strip(), row['Player Names'].split(PLAYER_NAMES_DELIMITTER)))
         player_names = self.__remove_empty(player_names)
         time = row['Time'].lower()
+        team_name = row.get('Team Name', '').strip() or time  # Use time as team name if not provided
 
         base_teams.append({
             'boss_name': boss_name,
             'fills': fills,
             'player_names': player_names,
             'time': time,
+            'team_name': team_name
         })
       return base_teams
 

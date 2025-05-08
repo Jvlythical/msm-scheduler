@@ -1,18 +1,16 @@
 import os
 import pandas as pd
-import pdb
 import tempfile
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from .file import FileImporter
-from ..config import Config
-from ...constants.gapi import (
-    CREDENTIALS_FILE_NAME, TOKEN_ENV, PLAYER_EXPERIENCES, PLAYERS_SPREADSHEET, PLAYER_AVAILABILITY, PLAYER_INTERESTS, PLAYER_DISCORD_IDS, ROLE_CONFIGS, SCOPES, TOKEN_FILE_NAME
+from msm_scheduler.core.importers.file import FileImporter
+from msm_scheduler.core.config import Config
+from msm_scheduler.core.gapi import get_credentials
+from msm_scheduler.constants.gapi import (
+    PLAYER_EXPERIENCES, PLAYERS_SPREADSHEET, PLAYER_AVAILABILITY, 
+    PLAYER_INTERESTS, PLAYER_DISCORD_IDS, ROLE_CONFIGS
 )
 
 SPREADSHEET_COLUMNS = [
@@ -24,44 +22,15 @@ SPREADSHEET_COLUMNS = [
 ]
 
 class GoogleSpreadSheetImporter():
-
     def __init__(self, sheet_id: str, columns = SPREADSHEET_COLUMNS):
         self.columns = columns
         self.sheet_id = sheet_id
-
-        # If token is set as an environment variable, write it to a file
-        if os.environ.get(TOKEN_ENV):
-            with open(TOKEN_FILE_NAME, 'w') as fp:
-                fp.write(os.environ[TOKEN_ENV])
-
-    @property
-    def gapi_credentials(self):
-        # The file token.json stores the user's access and refresh tokens, and is
-        # created automatically when the authorization flow completes for the first
-        # time.
-        if os.path.exists(TOKEN_FILE_NAME):
-            creds = Credentials.from_authorized_user_file(TOKEN_FILE_NAME, SCOPES)
-        else:
-            creds = None
-
-        # If there are no (valid) credentials available, let the user log in.
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE_NAME, SCOPES)
-                creds = flow.run_local_server(port=0)
-            # Save the credentials for the next run
-            with open(TOKEN_FILE_NAME, "w") as token:
-                token.write(creds.to_json())
-
-        return creds
 
     def get(self):
         config = Config()
 
         try:
-            service = build("sheets", "v4", credentials=self.gapi_credentials)
+            service = build("sheets", "v4", credentials=get_credentials())
 
             # Import data
             sheet = service.spreadsheets()
