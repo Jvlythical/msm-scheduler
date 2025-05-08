@@ -9,6 +9,7 @@ from .boss import Boss
 from .player import Player
 from ..core.team_roles import TeamRoles
 from ..lib.time_utils import parse_team_time
+from ..lib.logger import Logger, bcolors
 
 class Team:
     def __init__(self, **kwargs: TeamParams):
@@ -125,8 +126,16 @@ class Team:
         self._players.append(player)
         self.player_names.append(player.name)
 
-        player.remove_availability(self.time)
-        player.remove_interest(self.boss_name)
+        # Only remove the specific time slot instead of clearing all availability
+        try:
+            player.remove_availability(self.time)
+        except RuntimeError:
+            Logger.instance('Team').warning(f"{bcolors.WARNING}Failed to remove availability {self.time} for {player.name}{bcolors.ENDC}")
+
+        try:
+            player.remove_interest(self.boss_name)
+        except RuntimeError:
+            Logger.instance('Team').warning(f"{bcolors.WARNING}Failed to remove interest {self.boss_name} for {player.name}{bcolors.ENDC}")
 
         return True
 
@@ -179,9 +188,40 @@ class Team:
     def player_available(self, player: Player):
         for assigned_player in self.players:
             if player.identity == assigned_player.identity:
+                Logger.instance('Team').warning(f"{bcolors.WARNING}{player.name} already in team{bcolors.ENDC}")
                 return False
 
-        return self.time in player.availability
+        # Extract the day and hour from the team's time (e.g. "monday.19:30" -> "monday", "19")
+        team_day = self.time.split('.')[0]
+        team_hour = int(self.time.split('.')[-1].split(':')[0])
+        
+        # Check if player has any availability matching this day and hour
+        is_available = False
+        for availability in player.availability:
+            avail_day = availability.split('.')[0]
+            avail_hour = int(availability.split('.')[-1].split(':')[0])
+            if avail_day == team_day and avail_hour == team_hour:
+                is_available = True
+                break
+            # Check if this is an n+ availability and team hour is greater
+            if availability.endswith('+'):
+                base_hour = int(availability.split('.')[-1].split(':')[0].rstrip('+'))
+                if avail_day == team_day and team_hour >= base_hour:
+                    is_available = True
+                    break
+        
+        if not is_available:
+            Logger.instance('Team').warning(
+                f"{bcolors.WARNING}{player.name} not available at {self.time}. "
+                f"Player availability: {player.availability}{bcolors.ENDC}"
+            )
+        else:
+            Logger.instance('Team').info(
+                f"{bcolors.OKGREEN}{player.name} available at {self.time}. "
+                f"Player availability: {player.availability}{bcolors.ENDC}"
+            )
+            
+        return is_available
 
     @property
     def roles(self) -> TeamRoles:

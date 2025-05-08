@@ -71,14 +71,27 @@ class TeamsScheduler():
         assigned = False
         player_teams: List[Team] = self.player_teams_index[player.name]
 
+        Logger.instance(LOG_ID).info(f"{bcolors.OKBLUE}Attempting to assign {player.name} to teams{bcolors.ENDC}")
+        Logger.instance(LOG_ID).info(f"Player availability: {player.availability}")
+
         for team in teams:
+            Logger.instance(LOG_ID).info(f"Checking team {team.team_name} at {team.time}")
+            
             if not team.player_available(player):
+                Logger.instance(LOG_ID).warning(f"{bcolors.WARNING}{player.name} not available for team {team.team_name} at {team.time}{bcolors.ENDC}")
                 continue
 
             if team.add_player(player):
                 assigned = True
                 player_teams.append(team)
+                Logger.instance(LOG_ID).info(f"{bcolors.OKGREEN}Successfully assigned {player.name} to team {team.team_name} at {team.time}{bcolors.ENDC}")
                 break
+            else:
+                Logger.instance(LOG_ID).warning(f"{bcolors.WARNING}Failed to add {player.name} to team {team.team_name} at {team.time}{bcolors.ENDC}")
+
+        if not assigned:
+            Logger.instance(LOG_ID).warning(f"{bcolors.WARNING}Could not assign {player.name} to any team{bcolors.ENDC}")
+            
         return assigned
 
     def assign_player_interests(self, player: Player):
@@ -119,14 +132,15 @@ class TeamsScheduler():
                 else:
                     schedule.add_fill(player)
 
-                filled = True
+                # Check if all teams are full
+                all_teams_full = True
                 for team in teams:
                     if not team.is_full():
-                        filled = False
+                        all_teams_full = False
                         break
 
-                # Continue while teams are not filled
-                if filled:
+                # Only break if all teams are full
+                if all_teams_full:
                     break
                     
         # Add remaining players as fills for the boss
