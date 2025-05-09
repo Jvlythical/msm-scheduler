@@ -8,6 +8,7 @@ from .core.importers.file import FileImporter
 from .core.importers.google_spreadsheet import GoogleSpreadSheetImporter
 from .core.players_builder import PlayersBuilder
 from .core.teams_scheduler import TeamsScheduler
+from .core.schedule import Schedule
 from .lib.logger import bcolors, Logger
 from .models import Boss, Team, RoleConfig
 from .lib.time_utils import get_next_timestamp, format_team_time, parse_team_time
@@ -47,11 +48,16 @@ def schedule():
 
     bosses = list(map(lambda row: Boss(**row), database.bosses))
     base_teams = []
+    
+    # First, collect all non-Lucid teams
     for row in database.base_teams:
         team = Team(**row)
         # Set team name to time if not provided
         if not team.team_name:
             team.team_name = team.time
+        # Skip original Lucid teams
+        if team.boss_name == 'lucid':
+            continue
         base_teams.append(team)
     
     boss_players = BossPlayers(players=players, bosses=bosses)
@@ -59,6 +65,65 @@ def schedule():
     # Pass role configs to scheduler
     scheduler = TeamsScheduler(boss_players, base_teams, role_configs)
     schedules = scheduler.assign()
+
+    # After scheduling is complete, create Lucid teams based on final Hard Damien teams
+    lucid_boss = next((b for b in bosses if b.name == 'lucid'), None)
+    if lucid_boss:
+        # Get the final Hard Damien teams from the schedules
+        hard_damien_schedule = next((s for s in schedules if s.boss_name == 'hard_damien'), None)
+        if hard_damien_schedule:
+            # Stage 1: Create Lucid teams and remove players who don't meet requirements
+            lucid_teams = []
+            for team in hard_damien_schedule.teams:
+                # Create a new team for Lucid with the same time and players
+                lucid_team = Team(
+                    time=team.time,
+                    boss_name='lucid',
+                    player_names=team.player_names.copy(),
+                    fills=team.fills.copy(),
+                    team_name=f"Lucid {team.team_name}"
+                )
+                # Set the boss property
+                lucid_team.boss = lucid_boss
+                
+                # Set up the players list using the players_index
+                players = []
+                for player_name in lucid_team.player_names:
+                    player = boss_players.players_index[player_name]
+                    # Only add players who meet Lucid requirements
+                    if 'lucid' in player.interests and player.boss_ready(lucid_boss):
+                        players.append(player)
+                lucid_team.players = players
+                
+                # Set up alternative players (fills)
+                alternative_players = []
+                for player_name in lucid_team.fills:
+                    player = boss_players.players_index[player_name]
+                    if 'lucid' in player.interests and player.boss_ready(lucid_boss):
+                        alternative_players.append(player)
+                lucid_team.alternative_players = alternative_players
+                
+                lucid_teams.append(lucid_team)
+            
+            # Stage 2: Fill empty spots with remaining available players
+            for lucid_team in lucid_teams:
+                # Try to fill any empty spots
+                while not lucid_team.is_full():
+                    player = boss_players.next_player('lucid')
+                    if not player:
+                        break
+                    
+                    if lucid_team.player_available(player):
+                        lucid_team.add_player(player)
+                    else:
+                        lucid_team.alternative_players.append(player)
+                
+                # Add the Lucid team to the appropriate schedule
+                lucid_schedule = next((s for s in schedules if s.boss_name == 'lucid'), None)
+                if not lucid_schedule:
+                    lucid_schedule = Schedule('lucid', [])
+                    schedules.append(lucid_schedule)
+                lucid_schedule.add_team(lucid_team)
 
     return schedules
 
