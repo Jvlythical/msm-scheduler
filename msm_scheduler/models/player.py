@@ -128,15 +128,29 @@ class Player:
         return self.hp >= boss.hp_required and self.arcane_power >= boss.arcane_power_required
 
     def remove_availability(self, time: str):
-        if time not in self.availability:
+        # Extract the day and hour from the time string (e.g. "monday.19:30" -> "monday", "19")
+        day = time.split('.')[0]
+        hour = time.split('.')[-1].split(':')[0]
+        
+        # Find the specific availability that matches this day and hour
+        matching_time = None
+        for t in self.availability:
+            avail_day = t.split('.')[0]
+            avail_hour = t.split('.')[-1].split(':')[0]
+            if avail_day == day and avail_hour == hour:
+                matching_time = t
+                break
+        
+        if not matching_time:
             availabilities = "\n".join(self.availability)
             raise RuntimeError(f"=== {self.name} is not available at {time}\n~ Availabilities\n{availabilities}")
 
-        self.availability_count[time] += 1
-
-        # Each availability time can be used AVAILABILITY_USAGES times
-        if self.availability_count[time] >= AVAILABILITY_USAGES:
-            self.availability.remove(time)
+        # Increment count for this specific time
+        self.availability_count[matching_time] += 1
+        
+        # Remove availability if it has been used AVAILABILITY_USAGES times
+        if self.availability_count[matching_time] >= AVAILABILITY_USAGES:
+            self.availability.remove(matching_time)
 
     def remove_interest(self, boss_name: str, **options):
         if boss_name not in self.interests:

@@ -1,7 +1,7 @@
 from .lib.simple_http_request_handler import SimpleHTTPRequestHandler
 from .availability import build_boss_players
 from .schedule import schedule
-from .lib.time_utils import get_next_timestamp, format_team_time
+from .lib.time_utils import get_next_timestamp, format_team_time, parse_team_time
 
 def get_availability(context: SimpleHTTPRequestHandler):
   try:
@@ -54,20 +54,31 @@ def get_schedule(context: SimpleHTTPRequestHandler):
   lines = []
   for _schedule in schedules:
     teams = _schedule.teams
+    # Format boss name in Title Case and replace underscores with spaces
+    formatted_boss_name = _schedule.boss_name.replace('_', ' ').title()
 
-    lines.append(f"=== {_schedule.boss_name} schedules")
+    lines.append(f"=== {formatted_boss_name} schedules")
     lines.append("")
 
     for team in teams:
-      day, hour = team.time.split('.')
-      timestamp = get_next_timestamp(day, int(hour))
+      day, hour, minutes = parse_team_time(team.time)
       
-      lines.append(f"~ {team.time} filled {len(team.players)}/{team.boss.capacity}")
-      lines.append(format_team_time(team.time, team.boss_name))
+      # Format team name as "Boss Name Day: TeamName"
+      formatted_team_name = f"{formatted_boss_name} {day.capitalize()}: {team.team_name}"
+      lines.append(f"~ {formatted_team_name}")
+      lines.append(format_team_time(team.time, _schedule.boss_name))
 
-      for player, role_label in team.get_formatted_players():
+      # Get formatted players
+      formatted_players = list(team.get_formatted_players())
+      
+      # Add numbered entries for all players
+      for i, (player, role_label) in enumerate(formatted_players, 1):
         discord_tag = f"@{player.discord_id}" if player.discord_id else player.name
-        lines.append(f"{discord_tag} ({player.name}){role_label}")
+        lines.append(f"{i}. {discord_tag} ({player.name}){role_label}")
+      
+      # Add FILL entries for remaining slots
+      for i in range(len(formatted_players) + 1, team.boss.capacity + 1):
+        lines.append(f"{i}. FILL")
 
       if len(team.availability_conflicts) > 0:
         lines.append("")

@@ -46,10 +46,15 @@ class PlayersBuilder():
             del availability['identity']
             availabilities_index[identity] = []
 
+            Logger.instance(LOG_ID).info(f"{bcolors.OKBLUE}Building availability for {identity}{bcolors.ENDC}")
             for day in availability:
                 hours = availability[day]
+                if hours:
+                    Logger.instance(LOG_ID).info(f"  {day}: {hours}")
 
                 availabilities_index[identity] += list(map(lambda hour: f"{day.strip()}.{hour.strip()}", hours))
+            
+            Logger.instance(LOG_ID).info(f"{bcolors.OKGREEN}Final availability for {identity}: {availabilities_index[identity]}{bcolors.ENDC}")
         
         return availabilities_index
 

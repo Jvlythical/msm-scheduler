@@ -1,7 +1,9 @@
 import pdb
 import re
+from ...lib.logger import Logger, bcolors
 
 DELIMITTER = ','
+LOG_ID = 'CSVToPlayerAvailabilities'
 
 class CSVToPlayerAvailabilitiesTransformer():
 
@@ -32,32 +34,57 @@ class CSVToPlayerAvailabilitiesTransformer():
   def tranform(self):
     availabilities = []
     for row in self.rows:
-      availabilities.append({
+      identity = (row['Identity'] or '').strip()
+      Logger.instance(LOG_ID).info(f"{bcolors.OKBLUE}Processing availabilities for {identity}{bcolors.ENDC}")
+      
+      availability = {
         'friday': self._to_availabilities(row[self.column_map.get('Friday', 'Friday')] or ''),
-        'identity': (row['Identity'] or '').strip(),
+        'identity': identity,
         'monday': self._to_availabilities(row[self.column_map.get('Monday', 'Monday')] or ''),
         'saturday': self._to_availabilities(row[self.column_map.get('Saturday', 'Saturday')] or ''),
         'sunday': self._to_availabilities(row[self.column_map.get('Sunday', 'Sunday')] or ''),
         'thursday': self._to_availabilities(row[self.column_map.get('Thursday', 'Thursday')] or ''),
         'tuesday': self._to_availabilities(row[self.column_map.get('Tuesday', 'Tuesday')] or ''),
         'wednesday': self._to_availabilities(row[self.column_map.get('Wednesday', 'Wednesday')] or '')
-      })
+      }
+      
+      # Log the final availability for this player
+      Logger.instance(LOG_ID).info(f"{bcolors.OKGREEN}Final availability for {identity}:{bcolors.ENDC}")
+      for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']:
+        if availability[day]:
+          Logger.instance(LOG_ID).info(f"  {day}: {availability[day]}")
+      
+      availabilities.append(availability)
     return availabilities
 
   def _to_availabilities(self, cell: str):
     availabilities = []
+    if not cell:
+      return availabilities
+      
+    Logger.instance(LOG_ID).info(f"{bcolors.OKCYAN}Processing cell: {cell}{bcolors.ENDC}")
+    
+    # Split by comma and handle each availability
     for availability in cell.split(DELIMITTER):
-      if availability == None:
+      if not availability:
         continue
-      availabilities += self._replace_n_plus(availability.strip()).split(DELIMITTER)
+      # Handle n+ notation first
+      availability = self._replace_n_plus(availability.strip())
+      Logger.instance(LOG_ID).info(f"  After n+ replacement: {availability}")
+      # Then split by comma again in case n+ generated multiple hours
+      availabilities.extend(availability.split(DELIMITTER))
 
-    return list(filter(lambda time: not not time, availabilities))
+    # Filter out empty strings and duplicates
+    result = list(dict.fromkeys(filter(None, availabilities)))
+    Logger.instance(LOG_ID).info(f"  Final result: {result}")
+    return result
 
   def _replace_n_plus_func(self, match):
       # Extract the number before the "+" symbol
       n = int(match.group(1))
       # Generate the sequence from n to 23
       replacement = DELIMITTER.join(str(i) for i in range(n, 24))
+      Logger.instance(LOG_ID).info(f"  Replacing {match.group(0)} with: {replacement}")
       return replacement
 
   def _replace_n_plus(self, s):
