@@ -172,17 +172,15 @@ class TeamsScheduler():
         return schedule.sorted_teams(handler)
 
     def player_schedule_teams(self, player: Player, boss_name: str):
-        player_teams: List[Team] = self.player_teams_index[player.name]
-        availability = list(map(lambda team: team.time_by_day, player_teams))
         schedule_teams: List[Team] = self.schedule_teams(boss_name)
-
-        # Find teams that are on the same days as when the player is already running
-        teams = list(filter(lambda team: team.time_by_day in availability, schedule_teams))
-
-        if len(teams) == 0:
-            return schedule_teams
-
-        return teams
+        
+        # Filter teams based on player availability
+        available_teams = []
+        for team in schedule_teams:
+            if team.player_available(player):
+                available_teams.append(team)
+                
+        return available_teams
 
     def __assign_base_team_interests(self):
         # For the base team player's remaining interests, assign them a team
