@@ -5,3 +5,4 @@ class TeamParams(TypedDict):
     fills: List[str]
     player_names: List[str]
     time: str
+    team_name: str

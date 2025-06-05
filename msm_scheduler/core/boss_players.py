@@ -37,10 +37,12 @@ class BossPlayers():
         for boss_name in self.boss_stacks:
             boss = self.bosses_index.get(boss_name)
             stack = self.get(boss_name)
+            
+            # Sort by effectiveness first
             stack.sort(key=lambda player: bem.rate(player, boss))
-
-            # TESTING: sort players by availability
-            # stack.sort(key=lambda player: len(player.availability))
+            
+            # Then sort by availability (players with more availability go last)
+            stack.sort(key=lambda player: len(player.availability))
 
     def availability_distribution(self):
         boss_availability_distribution = {}

@@ -1,6 +1,6 @@
 import numpy as np
 import pdb
-from typing import List
+from typing import List, Optional
 
 from ..constants.boss import VALID_BOSSES
 from ..core.team_clear_prbs import TeamClearProbabilityModel
@@ -8,6 +8,8 @@ from ..types import TeamParams
 from .boss import Boss
 from .player import Player
 from ..core.team_roles import TeamRoles
+from ..lib.time_utils import parse_team_time
+from ..lib.logger import Logger, bcolors
 
 class Team:
     def __init__(self, **kwargs: TeamParams):
@@ -23,20 +25,24 @@ class Team:
         self.tcpm = TeamClearProbabilityModel()
         # self.tcpm.fit()
         self._roles = None
+        self.team_name = kwargs.get('team_name', self.time)
 
     @property
-    def time(self):
+    def time(self) -> str:
         return self._time
 
-    @property
-    def time_by_day(self):
-        return self._time.split('.')[0]
-
     @time.setter
-    def time(self, value: List[str]):
+    def time(self, value: str):
         if not isinstance(value, str):
             raise ValueError("Time must be a string")
+        # Validate the time format
+        parse_team_time(value)  # This will raise ValueError if format is invalid
         self._time = value
+
+    @property
+    def time_by_day(self) -> str:
+        day, _, _ = parse_team_time(self._time)
+        return day
 
     @property
     def alternative_players(self):
@@ -120,8 +126,16 @@ class Team:
         self._players.append(player)
         self.player_names.append(player.name)
 
-        player.remove_availability(self.time)
-        player.remove_interest(self.boss_name)
+        # Only remove the specific time slot instead of clearing all availability
+        try:
+            player.remove_availability(self.time)
+        except RuntimeError:
+            Logger.instance('Team').warning(f"{bcolors.WARNING}Failed to remove availability {self.time} for {player.name}{bcolors.ENDC}")
+
+        try:
+            player.remove_interest(self.boss_name)
+        except RuntimeError:
+            Logger.instance('Team').warning(f"{bcolors.WARNING}Failed to remove interest {self.boss_name} for {player.name}{bcolors.ENDC}")
 
         return True
 
@@ -174,9 +188,40 @@ class Team:
     def player_available(self, player: Player):
         for assigned_player in self.players:
             if player.identity == assigned_player.identity:
+                Logger.instance('Team').warning(f"{bcolors.WARNING}{player.name} already in team{bcolors.ENDC}")
                 return False
 
-        return self.time in player.availability
+        # Extract the day and hour from the team's time (e.g. "monday.19:30" -> "monday", "19")
+        team_day = self.time.split('.')[0]
+        team_hour = int(self.time.split('.')[-1].split(':')[0])
+        
+        # Check if player has any availability matching this day and hour
+        is_available = False
+        for availability in player.availability:
+            avail_day = availability.split('.')[0]
+            avail_hour = int(availability.split('.')[-1].split(':')[0])
+            if avail_day == team_day and avail_hour == team_hour:
+                is_available = True
+                break
+            # Check if this is an n+ availability and team hour is greater
+            if availability.endswith('+'):
+                base_hour = int(availability.split('.')[-1].split(':')[0].rstrip('+'))
+                if avail_day == team_day and team_hour >= base_hour:
+                    is_available = True
+                    break
+        
+        if not is_available:
+            Logger.instance('Team').warning(
+                f"{bcolors.WARNING}{player.name} not available at {self.time}. "
+                f"Player availability: {player.availability}{bcolors.ENDC}"
+            )
+        else:
+            Logger.instance('Team').info(
+                f"{bcolors.OKGREEN}{player.name} available at {self.time}. "
+                f"Player availability: {player.availability}{bcolors.ENDC}"
+            )
+            
+        return is_available
 
     @property
     def roles(self) -> TeamRoles:
@@ -197,6 +242,27 @@ class Team:
         ordered = self.roles.get_ordered_players()
         return [(p, f" - {'/'.join(roles)}" if roles else '') for p, roles in ordered]
 
+    @property
+    def team_name(self) -> str:
+        return self._team_name
+
+    @team_name.setter
+    def team_name(self, value: str):
+        if not isinstance(value, str):
+            raise ValueError("Team name must be a string")
+        self._team_name = value
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @timestamp.setter
+    def timestamp(self, value):
+        self._timestamp = value
+
     def __repr__(self):
         return (f"Team(boss_name={self.boss_name}, player_names={self.player_names}, "
                 f"time={self.time})")
+
+    def __str__(self) -> str:
+        return f"{self.team_name} - {self.boss_name} ({len(self.players)}/{self.boss.capacity if self.boss else 0})"

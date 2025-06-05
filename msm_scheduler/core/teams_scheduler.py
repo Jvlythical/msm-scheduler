@@ -1,22 +1,24 @@
 import pdb
 
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Optional
 
 from ..lib.logger import bcolors, Logger
 from ..models import Boss, Player, Team, RoleConfig
 from .boss_players import BossPlayers
 from .schedule import Schedule
 from .team_roles import TeamRoles
+from ..lib.time_utils import parse_team_time, get_next_timestamp
 
 LOG_ID = 'TeamsScheduler'
 
 class TeamsScheduler():
 
-    def __init__(self, boss_players: BossPlayers, base_teams: List[Team], role_configs: List[RoleConfig] = None):
+    def __init__(self, boss_players: BossPlayers, base_teams: List[Team], role_configs: Optional[Dict] = None):
         self.boss_players = boss_players
         self.base_teams = base_teams
-        self.role_configs = role_configs or []
+        self.role_configs = role_configs or {}
         self.fills = []
+        self._processed_teams = set()
 
         self.__join_base_team_resources(base_teams)
         
@@ -69,14 +71,27 @@ class TeamsScheduler():
         assigned = False
         player_teams: List[Team] = self.player_teams_index[player.name]
 
+        Logger.instance(LOG_ID).info(f"{bcolors.OKBLUE}Attempting to assign {player.name} to teams{bcolors.ENDC}")
+        Logger.instance(LOG_ID).info(f"Player availability: {player.availability}")
+
         for team in teams:
+            Logger.instance(LOG_ID).info(f"Checking team {team.team_name} at {team.time}")
+            
             if not team.player_available(player):
+                Logger.instance(LOG_ID).warning(f"{bcolors.WARNING}{player.name} not available for team {team.team_name} at {team.time}{bcolors.ENDC}")
                 continue
 
             if team.add_player(player):
                 assigned = True
                 player_teams.append(team)
+                Logger.instance(LOG_ID).info(f"{bcolors.OKGREEN}Successfully assigned {player.name} to team {team.team_name} at {team.time}{bcolors.ENDC}")
                 break
+            else:
+                Logger.instance(LOG_ID).warning(f"{bcolors.WARNING}Failed to add {player.name} to team {team.team_name} at {team.time}{bcolors.ENDC}")
+
+        if not assigned:
+            Logger.instance(LOG_ID).warning(f"{bcolors.WARNING}Could not assign {player.name} to any team{bcolors.ENDC}")
+            
         return assigned
 
     def assign_player_interests(self, player: Player):
@@ -117,14 +132,15 @@ class TeamsScheduler():
                 else:
                     schedule.add_fill(player)
 
-                filled = True
+                # Check if all teams are full
+                all_teams_full = True
                 for team in teams:
                     if not team.is_full():
-                        filled = False
+                        all_teams_full = False
                         break
 
-                # Continue while teams are not filled
-                if filled:
+                # Only break if all teams are full
+                if all_teams_full:
                     break
                     
         # Add remaining players as fills for the boss
@@ -194,3 +210,30 @@ class TeamsScheduler():
             team.boss = self.bosses_index.get(team.boss_name)
             team.players = players
             team.alternative_players = alternative_players
+
+    def schedule(self) -> List[Team]:
+        for team in self.base_teams:
+            if team.time in self._processed_teams:
+                continue
+            self._processed_teams.add(team.time)
+            self._schedule_team(team)
+        return self.base_teams
+
+    def _schedule_team(self, team: Team):
+        day, hour, minutes = parse_team_time(team.time)
+        timestamp = get_next_timestamp(day, hour, minutes)
+        team.timestamp = timestamp
+
+        # Find available bosses for this time
+        available_bosses = [b for b in self.bosses if b.is_available_at(timestamp)]
+        if not available_bosses:
+            return
+
+        # Sort bosses by priority and assign the highest priority available boss
+        available_bosses.sort(key=lambda b: b.priority, reverse=True)
+        team.boss = available_bosses[0]
+        team.boss_name = team.boss.name
+
+        # Assign roles after boss is set
+        if self.role_configs:
+            team._roles = TeamRoles(team, self.role_configs)
