@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  app:
+    image: msm-scheduler-app
+    #build: .
+    environment:
+      - PORT=8080
+      - MSM_SCHEDULER_LOG_LEVEL=info
+    volumes:
+      - "./credentials.json:/home/msm_scheduler/app/credentials.json:ro"
+      - "./config.yml:/home/msm_scheduler/app/config.yml:ro"
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
