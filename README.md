@@ -36,3 +36,15 @@ poetry run python3 -m msm_scheduler.tests.sanity_test
 poetry run python3 -m msm_scheduler.tests.google_spreadsheet_test
 
 ```
+
+### Docker
+
+Build and run the service using Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+The service listens on `PORT` (default `8080`) which is mapped to the same port on
+your host in the provided `docker-compose.yml`. The log level can be adjusted by
+setting `MSM_SCHEDULER_LOG_LEVEL` (e.g. `debug`, `info`).
